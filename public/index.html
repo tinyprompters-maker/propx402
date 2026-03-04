@@ -1,0 +1,742 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropX402 â Real Estate Intelligence API for AI Agents</title>
+<meta name="description" content="The property intelligence API built for AI real estate agents. Pay per query via x402 on Base. No keys. No subscriptions. Just USDC.">
+<meta name="keywords" content="real estate x402 API, property intelligence API, agentic real estate, PropX402, AI property data, x402 protocol real estate">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;500;700&family=Syne:wght@400;700;800&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #060810;
+    --surface: #0d1117;
+    --border: #1e2736;
+    --green: #00ff88;
+    --green-dim: #00ff8844;
+    --blue: #3b82f6;
+    --text: #e2e8f0;
+    --muted: #64748b;
+    --orange: #f97316;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'JetBrains Mono', monospace;
+    min-height: 100vh;
+    overflow-x: hidden;
+  }
+
+  /* Grid overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image:
+      linear-gradient(rgba(0,255,136,0.03) 1px, transparent 1px),
+      linear-gradient(90deg, rgba(0,255,136,0.03) 1px, transparent 1px);
+    background-size: 40px 40px;
+    pointer-events: none;
+    z-index: 0;
+  }
+
+  nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    padding: 16px 40px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    border-bottom: 1px solid var(--border);
+    background: rgba(6,8,16,0.85);
+    backdrop-filter: blur(12px);
+    z-index: 100;
+  }
+
+  .logo {
+    font-family: 'Syne', sans-serif;
+    font-weight: 800;
+    font-size: 1.3rem;
+    color: var(--green);
+    letter-spacing: -0.5px;
+  }
+
+  .logo span { color: var(--text); }
+
+  .nav-links {
+    display: flex;
+    gap: 32px;
+    list-style: none;
+  }
+
+  .nav-links a {
+    color: var(--muted);
+    text-decoration: none;
+    font-size: 0.8rem;
+    transition: color 0.2s;
+  }
+
+  .nav-links a:hover { color: var(--green); }
+
+  .nav-cta {
+    background: var(--green);
+    color: #000;
+    padding: 8px 20px;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 700;
+    text-decoration: none;
+    transition: opacity 0.2s;
+  }
+
+  .nav-cta:hover { opacity: 0.85; }
+
+  /* HERO */
+  .hero {
+    position: relative;
+    z-index: 1;
+    padding: 160px 40px 80px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    background: var(--green-dim);
+    border: 1px solid var(--green);
+    color: var(--green);
+    font-size: 0.72rem;
+    padding: 5px 12px;
+    border-radius: 2px;
+    margin-bottom: 24px;
+    letter-spacing: 0.05em;
+  }
+
+  .badge::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: var(--green);
+    animation: pulse 2s infinite;
+  }
+
+  @keyframes pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.3; }
+  }
+
+  h1 {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(2.5rem, 5vw, 4.5rem);
+    font-weight: 800;
+    line-height: 1.05;
+    letter-spacing: -2px;
+    margin-bottom: 24px;
+  }
+
+  h1 .accent { color: var(--green); }
+
+  .hero-sub {
+    font-size: 1rem;
+    color: var(--muted);
+    max-width: 560px;
+    line-height: 1.7;
+    margin-bottom: 40px;
+  }
+
+  .hero-actions {
+    display: flex;
+    gap: 16px;
+    flex-wrap: wrap;
+    margin-bottom: 64px;
+  }
+
+  .btn-primary {
+    background: var(--green);
+    color: #000;
+    padding: 14px 28px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    font-weight: 700;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: opacity 0.2s;
+  }
+
+  .btn-primary:hover { opacity: 0.85; }
+
+  .btn-outline {
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 14px 28px;
+    border-radius: 4px;
+    font-size: 0.9rem;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    transition: border-color 0.2s;
+  }
+
+  .btn-outline:hover { border-color: var(--green); color: var(--green); }
+
+  /* Terminal Demo */
+  .terminal {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+    max-width: 800px;
+    animation: slideUp 0.6s ease-out;
+  }
+
+  @keyframes slideUp {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+
+  .terminal-bar {
+    background: #1a2030;
+    padding: 10px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    border-bottom: 1px solid var(--border);
+  }
+
+  .dot { width: 10px; height: 10px; border-radius: 50%; }
+  .dot-r { background: #ff5f57; }
+  .dot-y { background: #febc2e; }
+  .dot-g { background: #28c840; }
+
+  .terminal-title {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-left: auto;
+  }
+
+  .terminal-body {
+    padding: 20px;
+    font-size: 0.78rem;
+    line-height: 1.8;
+  }
+
+  .t-comment { color: #4a5568; }
+  .t-key { color: #7dd3fc; }
+  .t-val { color: #86efac; }
+  .t-str { color: #fde68a; }
+  .t-num { color: #fb923c; }
+  .t-method { color: var(--green); }
+  .t-url { color: #c084fc; }
+  .t-dim { color: var(--muted); }
+  .t-prompt { color: var(--green); margin-right: 8px; }
+
+  /* SECTION */
+  .section {
+    position: relative;
+    z-index: 1;
+    padding: 80px 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  .section-label {
+    font-size: 0.72rem;
+    color: var(--green);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+
+  .section-title {
+    font-family: 'Syne', sans-serif;
+    font-size: clamp(1.8rem, 3vw, 2.8rem);
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 16px;
+  }
+
+  .section-sub {
+    color: var(--muted);
+    max-width: 520px;
+    line-height: 1.7;
+    margin-bottom: 48px;
+  }
+
+  /* PRICING */
+  .pricing-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 1px;
+    background: var(--border);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    overflow: hidden;
+  }
+
+  .price-card {
+    background: var(--surface);
+    padding: 32px;
+    transition: background 0.2s;
+  }
+
+  .price-card:hover { background: #0f1622; }
+
+  .price-card.featured {
+    background: #091520;
+    position: relative;
+  }
+
+  .price-card.featured::after {
+    content: 'POPULAR';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--green);
+    border: 1px solid var(--green);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+
+  .price-endpoint {
+    font-size: 0.75rem;
+    color: var(--green);
+    margin-bottom: 8px;
+    font-family: 'JetBrains Mono', monospace;
+  }
+
+  .price-amount {
+    font-family: 'Syne', sans-serif;
+    font-size: 2.2rem;
+    font-weight: 800;
+    letter-spacing: -1px;
+    margin-bottom: 4px;
+  }
+
+  .price-unit {
+    font-size: 0.75rem;
+    color: var(--muted);
+    margin-bottom: 20px;
+  }
+
+  .price-desc {
+    font-size: 0.8rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* DATA SOURCES */
+  .sources-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px;
+    margin-top: 40px;
+  }
+
+  .source-card {
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    padding: 20px;
+    background: var(--surface);
+  }
+
+  .source-name {
+    font-size: 0.85rem;
+    font-weight: 700;
+    margin-bottom: 4px;
+    color: var(--text);
+  }
+
+  .source-what {
+    font-size: 0.75rem;
+    color: var(--muted);
+    line-height: 1.5;
+    margin-bottom: 8px;
+  }
+
+  .source-badge {
+    font-size: 0.68rem;
+    padding: 2px 8px;
+    border-radius: 2px;
+    display: inline-block;
+  }
+
+  .badge-free { background: #052e16; color: #4ade80; border: 1px solid #166534; }
+  .badge-paid { background: #1c0a00; color: #fb923c; border: 1px solid #9a3412; }
+
+  /* HOW IT WORKS */
+  .steps {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 24px;
+    margin-top: 40px;
+  }
+
+  .step {
+    padding: 24px;
+    border: 1px solid var(--border);
+    border-radius: 6px;
+    background: var(--surface);
+    position: relative;
+  }
+
+  .step-num {
+    font-family: 'Syne', sans-serif;
+    font-size: 3rem;
+    font-weight: 800;
+    color: var(--border);
+    line-height: 1;
+    margin-bottom: 16px;
+  }
+
+  .step-title {
+    font-size: 0.9rem;
+    font-weight: 700;
+    margin-bottom: 8px;
+    color: var(--text);
+  }
+
+  .step-desc {
+    font-size: 0.78rem;
+    color: var(--muted);
+    line-height: 1.6;
+  }
+
+  /* FOOTER */
+  footer {
+    position: relative;
+    z-index: 1;
+    border-top: 1px solid var(--border);
+    padding: 40px;
+    max-width: 1100px;
+    margin: 0 auto;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 16px;
+  }
+
+  footer .logo { font-size: 1rem; }
+  footer p { font-size: 0.75rem; color: var(--muted); }
+
+  .footer-links { display: flex; gap: 24px; }
+  .footer-links a { font-size: 0.75rem; color: var(--muted); text-decoration: none; }
+  .footer-links a:hover { color: var(--green); }
+
+  /* Live demo section */
+  .demo-section {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 32px;
+    margin-top: 48px;
+  }
+
+  .demo-input {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 12px 16px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    border-radius: 4px;
+    outline: none;
+    margin-bottom: 12px;
+    transition: border-color 0.2s;
+  }
+
+  .demo-input:focus { border-color: var(--green); }
+
+  .demo-btn {
+    background: var(--green);
+    color: #000;
+    border: none;
+    padding: 12px 24px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 0.85rem;
+    font-weight: 700;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: opacity 0.2s;
+  }
+
+  .demo-btn:hover { opacity: 0.85; }
+  .demo-btn:disabled { opacity: 0.5; cursor: not-allowed; }
+
+  .demo-output {
+    margin-top: 16px;
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-radius: 4px;
+    padding: 16px;
+    font-size: 0.75rem;
+    line-height: 1.6;
+    max-height: 400px;
+    overflow-y: auto;
+    display: none;
+    white-space: pre-wrap;
+    color: var(--green);
+  }
+
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 0;
+  }
+</style>
+</head>
+<body>
+
+<nav>
+  <div class="logo">Prop<span>X402</span></div>
+  <ul class="nav-links">
+    <li><a href="#how">How It Works</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#data">Data Sources</a></li>
+    <li><a href="/health">API Status</a></li>
+    <li><a href="/docs.html">Docs</a></li>
+  </ul>
+  <a href="/docs.html" class="nav-cta">View Docs â</a>
+</nav>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge">LIVE ON BASE Â· x402 PROTOCOL Â· AI-NATIVE</div>
+
+  <h1>
+    Property intel<br>
+    for <span class="accent">AI agents</span><br>
+    that can't wait.
+  </h1>
+
+  <p class="hero-sub">
+    PropX402 is the real estate intelligence API built for autonomous AI agents.
+    No API keys. No accounts. No subscriptions. Hit an endpoint, pay $0.05 USDC via x402, get a complete property report in milliseconds.
+  </p>
+
+  <div class="hero-actions">
+    <a href="#demo" class="btn-primary">â¶ Try Free Demo</a>
+    <a href="/health" class="btn-outline">API Status</a>
+    <a href="/.well-known/mcp" class="btn-outline">MCP Schema</a>
+  </div>
+
+  <!-- Terminal -->
+  <div class="terminal">
+    <div class="terminal-bar">
+      <div class="dot dot-r"></div>
+      <div class="dot dot-y"></div>
+      <div class="dot dot-g"></div>
+      <span class="terminal-title">real-estate-agent.js</span>
+    </div>
+    <div class="terminal-body">
+<span class="t-comment">// AI agent queries PropX402 â pays via x402, gets full property intel</span>
+<span class="t-key">const</span> response = <span class="t-key">await</span> fetch(<span class="t-str">'https://propx402.com/property-intel'</span>, {
+  method: <span class="t-str">'POST'</span>,
+  body: JSON.stringify({ address: <span class="t-str">'1234 Oak St, Cedar Rapids, IA'</span> })
+});
+<span class="t-comment">// â HTTP 402: Payment Required ($0.05 USDC on Base)</span>
+<span class="t-comment">// â Agent auto-pays via x402 wallet</span>
+<span class="t-comment">// â HTTP 200: Property Intelligence Report</span>
+
+<span class="t-dim">{</span>
+  <span class="t-key">"property"</span>: { <span class="t-key">"yearBuilt"</span>: <span class="t-num">1987</span>, <span class="t-key">"sqft"</span>: <span class="t-num">1840</span>, <span class="t-key">"beds"</span>: <span class="t-num">3</span>, <span class="t-key">"baths"</span>: <span class="t-num">2</span> },
+  <span class="t-key">"valueEstimate"</span>: { <span class="t-key">"value"</span>: <span class="t-num">$218500</span>, <span class="t-key">"low"</span>: <span class="t-num">$204000</span>, <span class="t-key">"high"</span>: <span class="t-num">$233000</span> },
+  <span class="t-key">"rentEstimate"</span>: { <span class="t-key">"monthly"</span>: <span class="t-num">$1650</span>, <span class="t-key">"capRate"</span>: <span class="t-str">"~9.1%"</span> },
+  <span class="t-key">"floodRisk"</span>: { <span class="t-key">"zone"</span>: <span class="t-str">"X"</span>, <span class="t-key">"risk"</span>: <span class="t-str">"Minimal"</span> },
+  <span class="t-key">"walkScore"</span>: <span class="t-num">72</span>, <span class="t-key">"schoolScore"</span>: <span class="t-num">8.1</span>,
+  <span class="t-key">"neighborhood"</span>: { <span class="t-key">"medianIncome"</span>: <span class="t-str">"$61,200"</span>, <span class="t-key">"trajectory"</span>: <span class="t-str">"appreciating"</span> },
+  <span class="t-key">"riskScore"</span>: <span class="t-num">18</span>, <span class="t-key">"riskLabel"</span>: <span class="t-str">"Low"</span>
+<span class="t-dim">}</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- HOW IT WORKS -->
+<section class="section" id="how">
+  <div class="section-label">// HOW IT WORKS</div>
+  <h2 class="section-title">Three steps.<br>Zero friction.</h2>
+  <p class="section-sub">PropX402 implements the x402 payment protocol. AI agents discover the endpoint, pay per query in USDC on Base, and receive structured property intelligence. No accounts, no API keys, no human in the loop.</p>
+
+  <div class="steps">
+    <div class="step">
+      <div class="step-num">01</div>
+      <div class="step-title">Agent Requests</div>
+      <div class="step-desc">Your AI agent sends a POST to /property-intel with an address. No auth header needed.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">02</div>
+      <div class="step-title">HTTP 402 â Pay</div>
+      <div class="step-desc">PropX402 returns 402 Payment Required with USDC amount and Base network address. Agent auto-pays $0.05 USDC via x402 wallet.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">03</div>
+      <div class="step-title">Get Intel</div>
+      <div class="step-desc">Payment verified on Base. Structured JSON returned instantly: property data, AVM, flood risk, walkability, neighborhood demographics, risk score.</div>
+    </div>
+    <div class="step">
+      <div class="step-num">04</div>
+      <div class="step-title">Upgrade: Narrative</div>
+      <div class="step-desc">Pay $0.10 USDC for /property-narrative â Claude Sonnet 4.6 writes a full investment analysis, risk assessment, and agent recommendation.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- PRICING -->
+<section class="section" id="pricing">
+  <div class="section-label">// PRICING</div>
+  <h2 class="section-title">Pay per query.<br>Never subscribe.</h2>
+  <p class="section-sub">All payments settled instantly in USDC on Base. No billing cycles. No minimums. No chargebacks. Agents pay exactly for what they use.</p>
+
+  <div class="pricing-grid">
+    <div class="price-card featured">
+      <div class="price-endpoint">POST /property-intel</div>
+      <div class="price-amount">$0.05</div>
+      <div class="price-unit">USDC per query Â· Base network</div>
+      <div class="price-desc">Full property intelligence report. AVM, owner data, flood risk, walkability, school scores, census demographics, environmental data, risk score.</div>
+    </div>
+    <div class="price-card">
+      <div class="price-endpoint">POST /property-narrative</div>
+      <div class="price-amount">$0.10</div>
+      <div class="price-unit">USDC per query Â· Base network</div>
+      <div class="price-desc">Claude Sonnet 4.6 investment analysis. Full property narrative, market position, cap rate outlook, risk assessment, agent recommendation.</div>
+    </div>
+    <div class="price-card">
+      <div class="price-endpoint">POST /property-bulk</div>
+      <div class="price-amount">$0.03</div>
+      <div class="price-unit">USDC per address Â· up to 20</div>
+      <div class="price-desc">Bulk property intelligence for portfolio analysis. Up to 20 addresses per call. Same data, parallel processing, lower per-unit cost.</div>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- DATA SOURCES -->
+<section class="section" id="data">
+  <div class="section-label">// DATA SOURCES</div>
+  <h2 class="section-title">Best-in-class data.<br>Aggregated for agents.</h2>
+  <p class="section-sub">PropX402 aggregates from 6+ authoritative sources in parallel and returns a single normalized JSON payload in under 3 seconds.</p>
+
+  <div class="sources-grid">
+    <div class="source-card">
+      <div class="source-name">RentCast</div>
+      <div class="source-what">140M+ property records. AVM, rent estimates, owner info, comparables, last sale data.</div>
+      <span class="source-badge badge-paid">API Key Required</span>
+    </div>
+    <div class="source-card">
+      <div class="source-name">FEMA Flood Maps</div>
+      <div class="source-what">Official flood zone designation. Risk level, FIRM panel ID, in-flood-zone flag.</div>
+      <span class="source-badge badge-free">100% Free</span>
+    </div>
+    <div class="source-card">
+      <div class="source-name">US Census ACS</div>
+      <div class="source-what">Neighborhood demographics. Income, home values, rent, unemployment, education, median age.</div>
+      <span class="source-badge badge-free">100% Free</span>
+    </div>
+    <div class="source-card">
+      <div class="source-name">Walk Score</div>
+      <div class="source-what">Walk, transit, and bike scores. Livability assessment for any US address.</div>
+      <span class="source-badge badge-free">Free Tier</span>
+    </div>
+    <div class="source-card">
+      <div class="source-name">EPA EJSCREEN</div>
+      <div class="source-what">Environmental risk scoring. Air quality, superfund proximity, hazardous waste.</div>
+      <span class="source-badge badge-free">100% Free</span>
+    </div>
+    <div class="source-card">
+      <div class="source-name">OpenStreetMap</div>
+      <div class="source-what">Geocoding and address normalization. Zero cost, global coverage.</div>
+      <span class="source-badge badge-free">100% Free</span>
+    </div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<!-- LIVE DEMO -->
+<section class="section" id="demo">
+  <div class="section-label">// LIVE DEMO</div>
+  <h2 class="section-title">Try the free<br>health endpoint.</h2>
+  <p class="section-sub">Test the API discovery endpoint for free. Production property intel queries require $0.05 USDC via x402.</p>
+
+  <div class="demo-section">
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">GET /health â Free API discovery (no payment required)</div>
+    <button class="demo-btn" id="demoBtn" onclick="testApi()">â¶ Run Health Check</button>
+    <div class="demo-output" id="output"></div>
+  </div>
+
+  <div class="demo-section" style="margin-top:24px;">
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">GET /.well-known/mcp â MCP Tool Schema (for LLM agent discovery)</div>
+    <button class="demo-btn" onclick="testMcp()">â¶ Load MCP Schema</button>
+    <div class="demo-output" id="mcpOutput"></div>
+  </div>
+</section>
+
+<hr class="divider">
+
+<footer>
+  <div class="logo">Prop<span>X402</span></div>
+  <p>Real estate intelligence for the agentic web Â· x402 protocol Â· Base network</p>
+  <div class="footer-links">
+    <a href="/docs.html">Documentation</a>
+    <a href="/health">API Health</a>
+    <a href="/.well-known/mcp">MCP Schema</a>
+    <a href="https://docs.cdp.coinbase.com/x402">x402 Docs</a>
+  </div>
+</footer>
+
+<script>
+async function testApi() {
+  const btn = document.getElementById('demoBtn');
+  const output = document.getElementById('output');
+  btn.disabled = true;
+  btn.textContent = 'â³ Loading...';
+  output.style.display = 'block';
+  output.textContent = 'Fetching /health...';
+
+  try {
+    const res = await fetch('/health');
+    const data = await res.json();
+    output.textContent = JSON.stringify(data, null, 2);
+  } catch(e) {
+    output.textContent = 'Error: ' + e.message;
+  }
+
+  btn.disabled = false;
+  btn.textContent = 'â¶ Run Health Check';
+}
+
+async function testMcp() {
+  const output = document.getElementById('mcpOutput');
+  output.style.display = 'block';
+  output.textContent = 'Fetching /.well-known/mcp...';
+
+  try {
+    const res = await fetch('/.well-known/mcp');
+    const data = await res.json();
+    output.textContent = JSON.stringify(data, null, 2);
+  } catch(e) {
+    output.textContent = 'Error: ' + e.message;
+  }
+}
+</script>
+</body>
+</html>
