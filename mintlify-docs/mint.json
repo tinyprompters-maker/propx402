@@ -23,12 +23,6 @@
     "name": "API Status",
     "url": "https://propx402.xyz/health"
   },
-  "tabs": [
-    {
-      "name": "API Reference",
-      "url": "endpoints"
-    }
-  ],
   "anchors": [
     {
       "name": "MCP Schema",
@@ -74,12 +68,15 @@
       ]
     }
   ],
+  "redirects": [
+    {
+      "source": "/",
+      "destination": "/introduction"
+    }
+  ],
   "footerSocials": {
     "x": "https://x.com/ChuckYouSuck"
   },
-  "redirects": [
-    { "source": "/", "destination": "/introduction" }
-  ],
   "feedback": {
     "thumbsRating": true
   }
