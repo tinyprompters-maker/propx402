@@ -1,0 +1,19 @@
+{
+  "version": 2,
+  "buildCommand": "npm install",
+  "outputDirectory": "public",
+  "functions": {
+    "api/index.js": {
+      "maxDuration": 30
+    }
+  },
+  "routes": [
+    { "src": "/health", "dest": "/api/index.js" },
+    { "src": "/test/(.*)", "dest": "/api/index.js" },
+    { "src": "/property-intel", "dest": "/api/index.js" },
+    { "src": "/property-narrative", "dest": "/api/index.js" },
+    { "src": "/property-bulk", "dest": "/api/index.js" },
+    { "src": "/.well-known/mcp", "dest": "/api/index.js" },
+    { "src": "/(.*)", "dest": "/public/$1" }
+  ]
+}
