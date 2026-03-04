@@ -43,7 +43,11 @@
   "navigation": [
     {
       "group": "Get Started",
-      "pages": ["introduction", "quickstart", "x402-protocol"]
+      "pages": [
+        "introduction",
+        "quickstart",
+        "x402-protocol"
+      ]
     },
     {
       "group": "Endpoints",
@@ -79,5 +83,6 @@
   },
   "feedback": {
     "thumbsRating": true
-  }
+  },
+  "theme": "mint"
 }
