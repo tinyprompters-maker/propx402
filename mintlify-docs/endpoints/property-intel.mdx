@@ -1,0 +1,135 @@
+---
+title: "POST /property-intel"
+description: "14-source property intelligence report — $0.05 USDC"
+api: "POST https://propx402.xyz/property-intel"
+---
+
+<Note>
+  **Free test version available:** `POST /test/property-intel` — same request/response, no wallet needed.
+</Note>
+
+## Overview
+
+Aggregates 14 data sources in parallel into a comprehensive property intelligence report. Includes property valuation, rent estimate, flood zone, walkability, census demographics, environmental data, earthquake and tornado hazards, broadband availability, HUD opportunity zone, FRED housing price index, BLS job market, and FEMA disaster history.
+
+**Price:** `$0.05 USDC` on Base mainnet via x402
+
+## Request
+
+<ParamField body="address" type="string" required>
+  Full US property address including city, state, and zip.
+  
+  Example: `"1411 8th Ave SE, Cedar Rapids, IA 52403"`
+</ParamField>
+
+## Response
+
+<ResponseField name="location" type="object">
+  Geocoded address components — lat, lon, city, state, zip, county.
+</ResponseField>
+
+<ResponseField name="property" type="object">
+  Property details from RentCast — type, beds, baths, sqft, year built, last sale, AVM, and rent estimate with comparables.
+</ResponseField>
+
+<ResponseField name="floodRisk" type="object">
+  FEMA flood zone classification — zone code, risk level, in-flood-zone boolean.
+</ResponseField>
+
+<ResponseField name="walkability" type="object">
+  OSM-based walkability — walk score (0–100), label, total amenities within 800m.
+</ResponseField>
+
+<ResponseField name="neighborhood" type="object">
+  Census ACS — population, median household income, median home value, vacancy rate.
+</ResponseField>
+
+<ResponseField name="environment" type="object">
+  EPA EJSCREEN — air quality percentile, superfund proximity percentile.
+</ResponseField>
+
+<ResponseField name="naturalHazards" type="object">
+  USGS earthquake hazard, NOAA tornado risk, hail risk.
+</ResponseField>
+
+<ResponseField name="infrastructure" type="object">
+  FCC broadband — has gigabit, has fiber, max download Mbps, provider count.
+</ResponseField>
+
+<ResponseField name="hudIntelligence" type="object">
+  HUD opportunity zone flag, fair market rent benchmarks by bedroom count.
+</ResponseField>
+
+<ResponseField name="marketTrends" type="object">
+  FRED housing price index — year-over-year appreciation %, trend label.
+</ResponseField>
+
+<ResponseField name="jobMarket" type="object">
+  BLS state unemployment rate, trend, investor signal.
+</ResponseField>
+
+<ResponseField name="disasterHistory" type="object">
+  OpenFEMA — total federal disasters, flood declarations, recent disasters list.
+</ResponseField>
+
+<ResponseField name="riskScore" type="number">
+  Composite risk score 0–100. Lower is better.
+</ResponseField>
+
+<ResponseField name="riskLabel" type="string">
+  `Low` | `Moderate` | `High`
+</ResponseField>
+
+<ResponseExample>
+```json 200 - Cedar Rapids example
+{
+  "data": {
+    "location": {
+      "address": "1411 8th Ave SE, Cedar Rapids, IA 52403",
+      "lat": 41.9614,
+      "lon": -91.6401,
+      "city": "Cedar Rapids",
+      "state": "Iowa",
+      "stateCode": "IA",
+      "zip": "52403",
+      "county": "Linn"
+    },
+    "property": {
+      "propertyType": "Single Family",
+      "bedrooms": 3,
+      "bathrooms": 1,
+      "squareFeet": 1248,
+      "yearBuilt": 1910,
+      "lastSaleDate": "2020-06-15",
+      "lastSalePrice": 118000,
+      "rentEstimate": {
+        "rentLow": 1050,
+        "rentEstimate": 1168,
+        "rentHigh": 1285
+      },
+      "valueEstimate": {
+        "valueLow": 104000,
+        "valueEstimate": 131000,
+        "valueHigh": 158000
+      }
+    },
+    "floodRisk": {
+      "zone": "X",
+      "riskLevel": "Minimal",
+      "inFloodZone": false
+    },
+    "walkability": {
+      "walkScore": 52,
+      "walkLabel": "Somewhat Walkable",
+      "totalAmenitiesNearby": 18
+    },
+    "riskScore": 15,
+    "riskLabel": "Low",
+    "meta": {
+      "processingMs": 5850,
+      "dataSources": ["OpenStreetMap", "RentCast", "FEMA", "...14 total"]
+    }
+  }
+}
+```
+</ResponseExample>

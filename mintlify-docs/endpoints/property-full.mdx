@@ -1,0 +1,29 @@
+---
+title: "POST /property-full"
+description: "Complete package — intel + investor analysis + AI narrative — $0.25 USDC"
+api: "POST https://propx402.xyz/property-full"
+---
+
+## Overview
+
+The complete package. Runs property intelligence + investor analysis + AI narrative in a single request. Best value for full due diligence on any property.
+
+**Price:** `$0.25 USDC` on Base mainnet via x402
+
+## Request
+
+<ParamField body="address" type="string" required>
+  Full US property address.
+</ParamField>
+
+<ParamField body="condition" type="string" default="average">
+  Property condition: `poor` | `fair` | `average` | `good` | `excellent`
+</ParamField>
+
+## Response
+
+Returns the merged response from all three engines — everything from `/property-intel`, `/property-investor`, and `/property-narrative` combined in a single `data` object.
+
+<Tip>
+  At $0.25, `/property-full` is cheaper than calling all three endpoints separately ($0.05 + $0.15 + $0.10 = $0.30).
+</Tip>

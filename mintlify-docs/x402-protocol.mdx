@@ -1,0 +1,70 @@
+---
+title: x402 Protocol
+description: How PropX402 handles payments — no API keys, no subscriptions
+---
+
+## What is x402?
+
+x402 is an open payment protocol developed by Coinbase that revives the long-reserved HTTP `402 Payment Required` status code. It enables AI agents and services to pay for API access autonomously using USDC on Base — no accounts, sessions, or human intervention required.
+
+## Payment flow
+
+<Steps>
+  <Step title="Agent sends request">
+    Your agent or app sends a normal HTTP POST to a paid endpoint. No auth header needed.
+  </Step>
+  <Step title="Server returns 402">
+    PropX402 responds with `402 Payment Required` plus a payment payload specifying the USDC amount and Base network address.
+  </Step>
+  <Step title="Agent pays and retries">
+    The x402 client signs and broadcasts a USDC transfer on Base mainnet, then retries the request with a payment proof header.
+  </Step>
+  <Step title="Server verifies and responds">
+    PropX402 verifies the on-chain payment and returns the full data response.
+  </Step>
+</Steps>
+
+## Why x402?
+
+| | Traditional API | PropX402 (x402) |
+|---|---|---|
+| Auth | API keys, OAuth | None required |
+| Billing | Subscriptions, invoices | Pay per query |
+| Settlement | Days | ~200ms on Base |
+| Agents | Manual setup | Fully autonomous |
+| Chargebacks | Yes | Not reversible |
+
+## Requirements
+
+- EVM wallet on **Base mainnet** (Coinbase Wallet, MetaMask, or any Base-compatible wallet)
+- USDC balance on Base — bridge at [bridge.base.org](https://bridge.base.org) or buy directly
+- x402-compatible HTTP client — [x402 SDK on GitHub](https://github.com/coinbase/x402)
+
+## Payment receiver
+
+All PropX402 payments settle directly to this address. No intermediaries.
+
+```
+0xCFA4F055621356974dFA4846a6e0047f593C4dDA
+```
+
+## Facilitator
+
+```
+https://x402.org/facilitator
+```
+
+## Installation
+
+<CodeGroup>
+```bash npm
+npm install x402-fetch
+```
+```bash pip
+pip install x402
+```
+</CodeGroup>
+
+<Info>
+  Learn more about the x402 protocol at [x402.org](https://x402.org) or read the [Coinbase x402 whitepaper](https://www.x402.org/x402-whitepaper.pdf).
+</Info>

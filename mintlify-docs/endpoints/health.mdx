@@ -1,0 +1,38 @@
+---
+title: "GET /health"
+description: "API status, version, endpoint directory, and data source list"
+api: "GET https://propx402.xyz/health"
+---
+
+## Overview
+
+Free endpoint. Returns API status, version, protocol info, the full endpoint directory with pricing, all 14 data source names, and investor strategy names. Use for agent discovery and uptime monitoring.
+
+<ResponseExample>
+```json 200
+{
+  "status": "online",
+  "name": "PropX402",
+  "version": "2.0.0",
+  "protocol": "x402",
+  "network": "base-mainnet",
+  "wallet": "0xCFA4F055621356974dFA4846a6e0047f593C4dDA",
+  "endpoints": {
+    "/property-intel": { "method": "POST", "price": "$0.05 USDC" },
+    "/property-investor": { "method": "POST", "price": "$0.15 USDC" },
+    "/property-narrative": { "method": "POST", "price": "$0.10 USDC" },
+    "/property-full": { "method": "POST", "price": "$0.25 USDC" },
+    "/property-bulk": { "method": "POST", "price": "$0.03 USDC/address" }
+  },
+  "dataSources": [
+    "OpenStreetMap", "RentCast", "FEMA", "OSM Overpass",
+    "Census ACS", "EPA EJSCREEN", "USGS", "NOAA",
+    "FCC Broadband", "HUD OZ", "HUD FMR", "FRED", "BLS", "OpenFEMA"
+  ],
+  "investorStrategies": [
+    "Fix & Flip", "Co-Living", "Subject-To", "Short-Term Rental", "BRRRR"
+  ],
+  "powered_by": "Big Bang Interactive LLC"
+}
+```
+</ResponseExample>

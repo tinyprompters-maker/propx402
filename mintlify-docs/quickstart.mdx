@@ -1,0 +1,114 @@
+---
+title: Quickstart
+description: Make your first PropX402 API call in under 2 minutes
+---
+
+## Start with free test endpoints
+
+Every paid endpoint has a free mirror under `/test/` — identical request/response, real data, no wallet needed.
+
+### 1. Check API status
+
+<CodeGroup>
+```bash cURL
+curl https://propx402.xyz/health
+```
+```python Python
+import requests
+r = requests.get("https://propx402.xyz/health")
+print(r.json())
+```
+</CodeGroup>
+
+### 2. Free property intelligence
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://propx402.xyz/test/property-intel \
+  -H "Content-Type: application/json" \
+  -d '{"address": "1411 8th Ave SE, Cedar Rapids, IA 52403"}'
+```
+```python Python
+import requests
+r = requests.post(
+    "https://propx402.xyz/test/property-intel",
+    json={"address": "1411 8th Ave SE, Cedar Rapids, IA 52403"}
+)
+print(r.json())
+```
+```javascript JavaScript
+const res = await fetch("https://propx402.xyz/test/property-intel", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({ address: "1411 8th Ave SE, Cedar Rapids, IA 52403" })
+});
+const data = await res.json();
+```
+</CodeGroup>
+
+### 3. Free investor analysis
+
+<CodeGroup>
+```bash cURL
+curl -X POST https://propx402.xyz/test/property-investor \
+  -H "Content-Type: application/json" \
+  -d '{"address": "1411 8th Ave SE, Cedar Rapids, IA 52403", "condition": "fair"}'
+```
+```python Python
+import requests
+r = requests.post(
+    "https://propx402.xyz/test/property-investor",
+    json={
+        "address": "1411 8th Ave SE, Cedar Rapids, IA 52403",
+        "condition": "fair"
+    }
+)
+print(r.json()["data"]["investorAnalysis"]["recommendedStrategy"])
+# → "Short-Term Rental"
+```
+</CodeGroup>
+
+---
+
+## Production queries (with x402 payment)
+
+Once you're ready to go live, you need:
+- An EVM wallet on **Base mainnet**
+- USDC balance on Base ([bridge here](https://bridge.base.org))
+- An x402-compatible HTTP client
+
+<CodeGroup>
+```javascript JavaScript (x402-fetch)
+import { withPaymentInterceptor } from "x402-fetch";
+
+const fetch402 = withPaymentInterceptor(fetch, walletClient);
+
+const res = await fetch402("https://propx402.xyz/property-full", {
+  method: "POST",
+  headers: { "Content-Type": "application/json" },
+  body: JSON.stringify({
+    address: "1411 8th Ave SE, Cedar Rapids, IA 52403",
+    condition: "fair"
+  })
+});
+const { data } = await res.json();
+// data.investorAnalysis.recommendedStrategy → "Short-Term Rental"
+// data.investorAnalysis.investorScore → 70
+```
+```python Python (x402-requests)
+from x402.requests import X402Session
+
+session = X402Session(private_key="0xYOUR_WALLET_KEY")
+
+response = session.post(
+    "https://propx402.xyz/property-full",
+    json={"address": "1411 8th Ave SE, Cedar Rapids, IA 52403"}
+)
+print(response.json()["data"]["investorAnalysis"]["investorScore"])
+# → 70
+```
+</CodeGroup>
+
+<Tip>
+  Start with `/test/*` endpoints to validate your integration. Switch to production endpoints only when you're ready to attach a wallet.
+</Tip>

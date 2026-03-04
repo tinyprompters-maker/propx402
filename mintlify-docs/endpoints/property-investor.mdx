@@ -1,0 +1,128 @@
+---
+title: "POST /property-investor"
+description: "5 investor strategy engines + hidden costs + regulatory intel — $0.15 USDC"
+api: "POST https://propx402.xyz/property-investor"
+---
+
+<Note>
+  **Free test version available:** `POST /test/property-investor` — same request/response, no wallet needed.
+</Note>
+
+## Overview
+
+Runs the full investor analysis engine. Returns five ranked investment strategy models, derived financial metrics, hidden cost discovery (insurance, lead paint, wiring, asbestos), and state-level regulatory intelligence.
+
+**Price:** `$0.15 USDC` on Base mainnet via x402
+
+## Request
+
+<ParamField body="address" type="string" required>
+  Full US property address.
+</ParamField>
+
+<ParamField body="condition" type="string" default="average">
+  Property condition — calibrates rehab cost estimates.
+  
+  Options: `poor` | `fair` | `average` | `good` | `excellent`
+</ParamField>
+
+## Response
+
+<ResponseField name="investorScore" type="number">
+  Overall investor opportunity score 0–100.
+</ResponseField>
+
+<ResponseField name="investorScoreLabel" type="string">
+  Plain-language verdict — e.g. `"✅ Good Opportunity"` or `"⚠️ Below Average"`
+</ResponseField>
+
+<ResponseField name="recommendedStrategy" type="string">
+  Top-ranked strategy — `"Short-Term Rental"`, `"Co-Living"`, `"Fix & Flip"`, `"BRRRR"`, or `"Subject-To"`
+</ResponseField>
+
+<ResponseField name="strategyRanking" type="array">
+  All 5 strategies ranked by score, highest to lowest.
+</ResponseField>
+
+<ResponseField name="strategies" type="object">
+  Full projections for each strategy — see [Investor Strategies](/reference/investor-strategies) for details.
+</ResponseField>
+
+<ResponseField name="derivedMetrics" type="object">
+  Cap rate, GRM, 1% rule pass/fail, DSCR, $/sqft, value vs neighborhood median.
+</ResponseField>
+
+<ResponseField name="hiddenCosts" type="object">
+  Insurance estimate, rehab cost range, lead paint risk, wiring risk, asbestos flag.
+</ResponseField>
+
+<ResponseField name="regulatoryIntelligence" type="object">
+  State landlord score (0–100), eviction timeline weeks, rent control flag, market trend.
+</ResponseField>
+
+<ResponseExample>
+```json 200 - Cedar Rapids example (condition: fair)
+{
+  "data": {
+    "investorAnalysis": {
+      "investorScore": 70,
+      "investorScoreLabel": "✅ Good Opportunity",
+      "recommendedStrategy": "Short-Term Rental",
+      "strategyRanking": [
+        { "name": "Short-Term Rental", "score": 82 },
+        { "name": "Co-Living",         "score": 78 },
+        { "name": "Sub-To",            "score": 50 },
+        { "name": "BRRRR",             "score": 40 },
+        { "name": "Fix & Flip",        "score": 20 }
+      ],
+      "strategies": {
+        "shortTermRental": {
+          "estimatedNightlyRate": 124,
+          "estimatedOccupancy": "45%",
+          "projectedAnnualRevenue": 20447,
+          "strPremiumVsLTR": "45.6%",
+          "verdict": "🔥 STR strongly outperforms LTR"
+        },
+        "subjectTo": {
+          "estimatedRemainingBalance": 94043,
+          "estimatedOriginalRate": "2.96%",
+          "rateLockAdvantage": "🔥 LOCKED at 2.96% — massive rate advantage"
+        },
+        "coLiving": {
+          "rentalPremium": "+36.1%",
+          "verdict": "✅ Good co-living opportunity"
+        },
+        "brrrr": {
+          "cashLeftInDeal": 46260,
+          "verdict": "❌ Weak BRRRR — too much cash trapped"
+        },
+        "fixAndFlip": {
+          "projectedProfit": -23892,
+          "verdict": "❌ Not recommended for flip"
+        }
+      },
+      "derivedMetrics": {
+        "capRate": "7.02%",
+        "grossRentMultiplier": 7.8,
+        "onePercentRule": { "ratio": "1.06%", "passes": true },
+        "debtServiceCoverageRatio": 1.52,
+        "valueVsNeighborhood": "✅ 15% below neighborhood median"
+      },
+      "hiddenCosts": {
+        "estimatedInsurance": { "estimatedMonthlyInsurance": 142 },
+        "rehabEstimate": {
+          "estimatedRehabMid": 86010,
+          "leadPaintRisk": "Very High",
+          "wiringRisk": "High — likely knob & tube"
+        }
+      },
+      "regulatoryIntelligence": {
+        "landlordScore": { "score": 78, "evictionWeeks": 3, "rentControl": false },
+        "marketTrend": "Appreciating",
+        "appreciation": "4.02%"
+      }
+    }
+  }
+}
+```
+</ResponseExample>

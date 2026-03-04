@@ -1,0 +1,33 @@
+---
+title: "POST /property-bulk"
+description: "Bulk property intelligence — $0.03 USDC per address, up to 20"
+api: "POST https://propx402.xyz/property-bulk"
+---
+
+## Overview
+
+Process up to 20 properties in a single request. All properties are analyzed in parallel. Ideal for portfolio screening and neighborhood comparisons.
+
+**Price:** `$0.03 USDC per address` — 20 addresses = $0.60 USDC total
+
+## Request
+
+<ParamField body="addresses" type="string[]" required>
+  Array of full US property addresses. Maximum 20 per request.
+</ParamField>
+
+<RequestExample>
+```json
+{
+  "addresses": [
+    "1411 8th Ave SE, Cedar Rapids, IA 52403",
+    "820 3rd Ave SE, Cedar Rapids, IA 52401",
+    "1234 Oak Dr, Marion, IA 52302"
+  ]
+}
+```
+</RequestExample>
+
+<Warning>
+  Payment scales with address count. Each address is attempted regardless of data availability — partial failures return a `note` key instead of data for that address.
+</Warning>

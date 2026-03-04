@@ -1,0 +1,44 @@
+---
+title: Investor Strategies
+description: How the five investment strategy engines work
+---
+
+The `/property-investor` and `/property-full` endpoints run five independent investment models. Each produces a score (0–100), detailed projections, and a plain-language verdict.
+
+## Fix & Flip
+ARV sourced from RentCast value high, minus rehab costs, holding costs (6 months), and closing costs (8%). Returns projected profit, ROI %, and MAO via the 70% rule.
+
+**Key outputs:** `projectedProfit`, `roi`, `mao`, `arvEstimate`, `rehabCost`
+
+## Co-Living
+Per-room rent vs. single-tenant rate, scaled by bedroom count. Returns rental premium %, break-even occupancy, and projected annual revenue.
+
+**Key outputs:** `perRoomRate`, `rentalPremium`, `annualRevenue`, `breakEvenOccupancy`
+
+## Subject-To
+Reverse-engineers the original mortgage using FRED historical rates by sale year. Returns estimated remaining balance, original rate, PITI, and rate-lock advantage vs. current market.
+
+**Key outputs:** `estimatedRemainingBalance`, `estimatedOriginalRate`, `monthlyPITI`, `rateLockAdvantage`
+
+## Short-Term Rental (STR)
+Estimates nightly rate from walkability, median income, and bedroom count. Projects annual revenue at estimated occupancy. Compares STR vs. LTR NOI directly.
+
+**Key outputs:** `estimatedNightlyRate`, `estimatedOccupancy`, `projectedAnnualRevenue`, `strPremiumVsLTR`
+
+## BRRRR
+75% LTV refinance model. Returns cash left in deal after refi, monthly cash flow, and cash-on-cash return (infinite if full pull-out achieved).
+
+**Key outputs:** `refiAmount`, `cashLeftInDeal`, `monthlyCashFlow`, `cashOnCashReturn`
+
+## Derived Metrics
+
+Calculated on every investor call regardless of strategy:
+
+| Metric | Description |
+|---|---|
+| Cap Rate | NOI ÷ property value |
+| GRM | Price ÷ annual gross rent |
+| 1% Rule | Monthly rent ÷ purchase price |
+| DSCR | NOI ÷ annual debt service |
+| $/SqFt | Value estimate ÷ square footage |
+| Value vs. Neighborhood | % below/above median home value |

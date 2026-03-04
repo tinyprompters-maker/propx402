@@ -1,0 +1,33 @@
+---
+title: "Free Test Endpoints"
+description: "Test every endpoint for free — no wallet required"
+---
+
+Every paid endpoint has a free development mirror under `/test/`. Identical request and response shapes, real data, no wallet or x402 payment required. Responses include `"mode": "TEST"`.
+
+| Test Endpoint | Mirrors Production |
+|---|---|
+| `POST /test/property-intel` | `/property-intel` |
+| `POST /test/property-investor` | `/property-investor` |
+| `POST /test/property-full` | `/property-full` |
+
+<Note>
+  Test endpoints use the same live data sources as production. The only difference is no x402 payment is required.
+</Note>
+
+## Example
+
+```bash
+curl -X POST https://propx402.xyz/test/property-intel \
+  -H "Content-Type: application/json" \
+  -d '{"address": "1411 8th Ave SE, Cedar Rapids, IA 52403"}'
+```
+
+The response will include:
+
+```json
+{
+  "mode": "TEST",
+  "data": { ... }
+}
+```

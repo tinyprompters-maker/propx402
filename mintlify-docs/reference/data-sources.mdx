@@ -1,0 +1,55 @@
+---
+title: Data Sources
+description: All 14 public and government APIs powering PropX402
+---
+
+PropX402 queries **14 public and government APIs** in parallel. No private brokers — all sources are official databases, open registries, or free-tier APIs.
+
+<CardGroup cols={2}>
+  <Card title="OpenStreetMap" icon="map-pin">
+    Geocoding — converts address to lat/lon + normalized string. Zero cost, global coverage.
+  </Card>
+  <Card title="RentCast" icon="house">
+    140M+ properties — AVM, rent estimates, property details, comparables. Free-tier API key.
+  </Card>
+  <Card title="FEMA Flood Map" icon="water">
+    NFHL flood zone classification at property coordinates. Fully free, no key.
+  </Card>
+  <Card title="OSM Overpass" icon="person-walking">
+    Real amenity-based walkability — POI count within 800m radius. Fully free.
+  </Card>
+  <Card title="US Census ACS" icon="users">
+    5-year survey — income, home values, vacancy, demographics. Fully free.
+  </Card>
+  <Card title="EPA EJSCREEN" icon="leaf">
+    Environmental justice — air quality percentile, superfund proximity. Fully free.
+  </Card>
+  <Card title="USGS NEHRP 2020" icon="mountain">
+    Earthquake hazard — peak ground acceleration at address coordinates. Fully free.
+  </Card>
+  <Card title="NOAA Severe Weather" icon="cloud-bolt">
+    Tornado and hail risk by state — feeds insurance estimates. Fully free.
+  </Card>
+  <Card title="FCC Broadband Map" icon="wifi">
+    Internet availability — gigabit access, fiber, max speeds, provider count. Fully free.
+  </Card>
+  <Card title="HUD Opportunity Zones" icon="star">
+    Federal OZ designation — capital gains tax advantage flag. Fully free.
+  </Card>
+  <Card title="HUD Fair Market Rent" icon="dollar-sign">
+    County FMR benchmarks — studio through 4BR. Fully free.
+  </Card>
+  <Card title="FRED (St. Louis Fed)" icon="chart-line">
+    State housing price index — YoY appreciation trend. Free API key.
+  </Card>
+  <Card title="BLS" icon="briefcase">
+    State unemployment rate and trend — rental demand signal. Fully free.
+  </Card>
+  <Card title="OpenFEMA" icon="triangle-exclamation">
+    Federal disaster history by county — floods, storms, declarations. Fully free.
+  </Card>
+</CardGroup>
+
+<Info>
+  All sources are queried in parallel. If an individual source fails, that field returns a `note` key instead of data. Only a geocoding failure (OpenStreetMap) returns a 500 error.
+</Info>

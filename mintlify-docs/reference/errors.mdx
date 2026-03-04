@@ -1,0 +1,42 @@
+---
+title: Errors & Limits
+description: HTTP status codes, partial data handling, and rate limits
+---
+
+## HTTP Status Codes
+
+| Status | Meaning | Action |
+|---|---|---|
+| `200` | Success | Data returned in `data` object |
+| `402` | Payment Required | Expected — x402 client pays and retries automatically |
+| `400` | Bad Request | Missing or empty `address` in request body |
+| `500` | Intel Fetch Failed | Address not geocoded or critical upstream failure — check address format |
+| `504` | Gateway Timeout | Vercel 30s limit exceeded — upstream API was slow, retry |
+
+## Partial data
+
+PropX402 always returns a response even when individual sources fail. Failed sources return a `note` key instead of data:
+
+```json
+{
+  "floodRisk": {
+    "note": "FEMA API unavailable",
+    "zone": null
+  }
+}
+```
+
+Only a geocoding failure (OpenStreetMap) produces a `500` error.
+
+## Rate limits
+
+No hard rate limits — x402 payment is the natural rate limiter. Vercel serverless enforces a **30-second execution timeout**. Bulk requests are capped at **20 addresses**.
+
+## Address format tips
+
+For best results, include full address with city, state, and zip:
+
+```
+✅ "1411 8th Ave SE, Cedar Rapids, IA 52403"
+⚠️  "1411 8th Ave SE"  ← may fail geocoding
+```

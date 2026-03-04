@@ -1,0 +1,33 @@
+---
+title: "POST /property-narrative"
+description: "Claude Sonnet AI-generated investment analysis — $0.10 USDC"
+api: "POST https://propx402.xyz/property-narrative"
+---
+
+## Overview
+
+Generates a human-readable investment analysis using Claude Sonnet. Synthesizes property data, market trends, and strategy scores into a structured written report — ideal for investor memos, agent summaries, and decision support.
+
+**Price:** `$0.10 USDC` on Base mainnet via x402
+
+## Request
+
+<ParamField body="address" type="string" required>
+  Full US property address.
+</ParamField>
+
+## Response
+
+<ResponseField name="narrative" type="string">
+  Full investment narrative covering: property overview, market position, recommended strategy, risk factors, and due diligence priorities.
+</ResponseField>
+
+<ResponseExample>
+```json 200
+{
+  "data": {
+    "narrative": "1411 8th Ave SE is a 1910-built single-family home in Cedar Rapids' southeast corridor, currently priced at approximately $131,000 — 15% below the neighborhood median. The property's strongest play is Short-Term Rental, projecting $20,447 annual revenue at 45% occupancy, a 45.6% premium over long-term rental income. The existing mortgage (est. 2.96% rate) represents a meaningful rate-lock advantage for a Subject-To acquisition. Key risks include very high lead paint probability and likely knob & tube wiring given the 1910 build year — budget $86K for full rehab. Iowa's landlord-friendly regulatory environment (score: 78/100, 3-week eviction timeline, no rent control) supports an investor-favorable hold strategy..."
+  }
+}
+```
+</ResponseExample>

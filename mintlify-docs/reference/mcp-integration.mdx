@@ -1,0 +1,37 @@
+---
+title: MCP Integration
+description: Use PropX402 as a native tool in Claude Desktop, Cursor, and any MCP client
+---
+
+PropX402 exposes an MCP discovery schema at `/.well-known/mcp`, enabling native tool use with Claude Desktop, Cursor, and any MCP-compatible framework.
+
+## Discover tools
+
+```bash
+curl https://propx402.xyz/.well-known/mcp
+```
+
+## Available tools
+
+| Tool | Endpoint |
+|---|---|
+| `get_property_intel` | `/property-intel` |
+| `get_property_investor` | `/property-investor` (accepts `condition`) |
+| `get_property_full` | `/property-full` |
+| `get_property_bulk` | `/property-bulk` |
+
+## Claude Desktop setup
+
+Add PropX402 to your `claude_desktop_config.json`:
+
+```json
+{
+  "mcpServers": {
+    "propx402": {
+      "url": "https://propx402.xyz/.well-known/mcp"
+    }
+  }
+}
+```
+
+Once added, Claude can call PropX402 tools directly — e.g. *"Run a full investor analysis on 1411 8th Ave SE, Cedar Rapids IA"*.
