@@ -1,0 +1,1195 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PropX402 Docs</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+<style>
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+:root{
+  --bg:#ffffff;
+  --bg2:#f8f9fa;
+  --bg3:#f1f3f5;
+  --border:#e5e7eb;
+  --border2:#d1d5db;
+  --text:#111827;
+  --text2:#374151;
+  --text3:#6b7280;
+  --text4:#9ca3af;
+  --accent:#0052ff;
+  --accent-bg:#eff4ff;
+  --accent-border:#c7d7fe;
+  --green:#059669;
+  --green-bg:#ecfdf5;
+  --amber:#d97706;
+  --amber-bg:#fffbeb;
+  --red:#dc2626;
+  --red-bg:#fef2f2;
+  --code-bg:#f6f8fa;
+  --code-border:#e5e7eb;
+  --nav-w:272px;
+  --toc-w:220px;
+  --top-h:57px;
+  --sub-h:44px;
+  --sans:'Inter',system-ui,sans-serif;
+  --mono:'JetBrains Mono',monospace;
+}
+html{scroll-behavior:smooth}
+body{background:var(--bg);color:var(--text);font-family:var(--sans);font-size:14.5px;line-height:1.7;-webkit-font-smoothing:antialiased}
+
+/* ââ TOP BAR âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.topbar{
+  position:fixed;top:0;left:0;right:0;z-index:200;
+  height:var(--top-h);
+  background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:center;padding:0 20px;gap:16px;
+}
+.top-logo{display:flex;align-items:center;gap:8px;text-decoration:none;flex-shrink:0}
+.logo-mark{
+  width:28px;height:28px;border-radius:6px;
+  background:var(--accent);
+  display:flex;align-items:center;justify-content:center;
+  font-size:13px;font-weight:700;color:#fff;letter-spacing:-.02em;
+}
+.logo-text{font-size:15px;font-weight:700;color:var(--text);letter-spacing:-.02em}
+.logo-text span{color:var(--accent)}
+.top-label{font-size:13px;font-weight:700;color:var(--text3);letter-spacing:.05em;text-transform:uppercase;margin-left:4px}
+
+.search-bar{
+  flex:1;max-width:420px;
+  display:flex;align-items:center;gap:8px;
+  padding:7px 12px;border-radius:8px;
+  border:1px solid var(--border);background:var(--bg2);
+  cursor:text;transition:border-color .15s;
+}
+.search-bar:hover{border-color:var(--border2)}
+.search-bar svg{flex-shrink:0;color:var(--text3)}
+.search-bar input{
+  border:none;background:none;outline:none;
+  font-size:13.5px;color:var(--text2);width:100%;
+  font-family:var(--sans);
+}
+.search-bar input::placeholder{color:var(--text4)}
+.search-kbd{
+  font-family:var(--mono);font-size:10px;color:var(--text4);
+  background:var(--bg3);border:1px solid var(--border);
+  padding:1px 5px;border-radius:4px;flex-shrink:0;
+}
+
+.top-right{display:flex;align-items:center;gap:8px;margin-left:auto}
+.top-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:7px;
+  font-size:13px;font-weight:500;cursor:pointer;
+  text-decoration:none;transition:all .15s;
+  border:1px solid transparent;
+}
+.top-btn-ghost{color:var(--text2);background:none}
+.top-btn-ghost:hover{background:var(--bg2);color:var(--text)}
+.top-btn-primary{
+  background:var(--accent);color:#fff;
+  font-weight:600;
+}
+.top-btn-primary:hover{background:#0044d4}
+.top-btn-primary svg{flex-shrink:0}
+.ai-btn{
+  display:flex;align-items:center;gap:5px;
+  padding:6px 12px;border-radius:7px;
+  font-size:13px;font-weight:500;
+  color:var(--text2);cursor:pointer;
+  border:1px solid var(--border);
+  background:var(--bg);transition:all .15s;
+}
+.ai-btn:hover{border-color:var(--border2);background:var(--bg2)}
+.ai-star{font-size:14px}
+
+/* ââ SUB NAV âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.subnav{
+  position:fixed;top:var(--top-h);left:0;right:0;z-index:190;
+  height:var(--sub-h);
+  background:var(--bg);border-bottom:1px solid var(--border);
+  display:flex;align-items:stretch;padding:0 20px;gap:0;
+}
+.subnav-item{
+  display:flex;align-items:center;
+  padding:0 14px;
+  font-size:13.5px;font-weight:500;color:var(--text3);
+  text-decoration:none;cursor:pointer;
+  border-bottom:2px solid transparent;
+  transition:all .15s;
+  white-space:nowrap;
+}
+.subnav-item:hover{color:var(--text2)}
+.subnav-item.on{color:var(--accent);border-bottom-color:var(--accent);font-weight:600}
+
+/* ââ LAYOUT ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.shell{
+  display:flex;
+  padding-top:calc(var(--top-h) + var(--sub-h));
+  min-height:100vh;
+}
+
+/* ââ LEFT SIDEBAR ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.leftnav{
+  width:var(--nav-w);flex-shrink:0;
+  position:fixed;
+  top:calc(var(--top-h) + var(--sub-h));
+  bottom:0;left:0;
+  overflow-y:auto;overflow-x:hidden;
+  border-right:1px solid var(--border);
+  padding:20px 0 60px;
+  background:var(--bg);
+  scrollbar-width:thin;scrollbar-color:var(--border) transparent;
+}
+.leftnav::-webkit-scrollbar{width:3px}
+.leftnav::-webkit-scrollbar-thumb{background:var(--border)}
+
+.nav-section-label{
+  padding:16px 20px 5px;
+  display:flex;align-items:center;gap:7px;
+  font-size:11px;font-weight:600;letter-spacing:.09em;text-transform:uppercase;color:var(--text3);
+}
+.nav-section-label svg{flex-shrink:0}
+
+.nav-link{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:6px 20px;
+  font-size:13.5px;color:var(--text2);
+  text-decoration:none;cursor:pointer;user-select:none;
+  transition:all .12s;border-radius:0;
+}
+.nav-link:hover{background:var(--bg2);color:var(--text)}
+.nav-link.on{
+  background:var(--accent-bg);color:var(--accent);font-weight:500;
+  border-right:2px solid var(--accent);
+}
+.nav-link .arrow{
+  font-size:11px;color:var(--text4);transition:transform .2s;
+}
+.nav-link.open .arrow{transform:rotate(90deg)}
+
+.nav-sub{display:none;padding-left:16px}
+.nav-sub.open{display:block}
+.nav-sub .nav-link{padding:5px 20px 5px 18px;font-size:13px}
+
+/* ââ MAIN CONTENT ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.content{
+  flex:1;min-width:0;
+  margin-left:var(--nav-w);
+  margin-right:var(--toc-w);
+  padding:36px 52px 120px;
+  max-width:780px;
+}
+
+/* ââ RIGHT TOC âââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.toc{
+  width:var(--toc-w);flex-shrink:0;
+  position:fixed;
+  top:calc(var(--top-h) + var(--sub-h));
+  right:0;bottom:0;
+  overflow-y:auto;
+  padding:28px 20px 60px;
+  border-left:1px solid var(--border);
+  background:var(--bg);
+}
+.toc-heading{
+  font-size:11.5px;font-weight:600;color:var(--text3);
+  letter-spacing:.06em;text-transform:uppercase;margin-bottom:12px;
+}
+.toc-item{
+  display:block;padding:4px 0 4px 10px;
+  font-size:13px;color:var(--text3);
+  text-decoration:none;cursor:pointer;
+  border-left:2px solid transparent;
+  transition:all .12s;line-height:1.4;
+}
+.toc-item:hover{color:var(--text2);border-left-color:var(--border2)}
+.toc-item.on{color:var(--accent);border-left-color:var(--accent);font-weight:500}
+
+/* ââ TYPOGRAPHY ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.breadcrumb{
+  display:flex;align-items:center;gap:6px;
+  font-size:13px;color:var(--text3);margin-bottom:12px;
+}
+.breadcrumb a{color:var(--accent);text-decoration:none;font-weight:500}
+.breadcrumb a:hover{text-decoration:underline}
+.breadcrumb-sep{color:var(--text4);font-size:12px}
+
+h1{font-size:30px;font-weight:700;line-height:1.2;letter-spacing:-.025em;margin-bottom:20px;color:var(--text)}
+h2{
+  font-size:20px;font-weight:600;letter-spacing:-.015em;
+  margin-top:44px;margin-bottom:14px;padding-top:44px;
+  border-top:1px solid var(--border);color:var(--text);
+}
+h2:first-of-type{margin-top:28px;padding-top:0;border-top:none}
+h3{font-size:16px;font-weight:600;margin-top:28px;margin-bottom:10px;color:var(--text)}
+h4{font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.08em;color:var(--text3);margin-top:20px;margin-bottom:8px}
+
+p{color:var(--text2);margin-bottom:14px;line-height:1.75;font-size:14.5px}
+p strong{color:var(--text);font-weight:600}
+a{color:var(--accent);text-decoration:none}
+a:hover{text-decoration:underline}
+ul,ol{padding-left:22px;margin-bottom:14px}
+li{color:var(--text2);margin-bottom:5px;font-size:14.5px;line-height:1.65}
+li strong{color:var(--text);font-weight:600}
+
+code{
+  font-family:var(--mono);font-size:12.5px;
+  background:var(--code-bg);border:1px solid var(--code-border);
+  padding:1px 5px;border-radius:4px;color:var(--text);
+}
+
+.section{scroll-margin-top:90px;margin-bottom:8px}
+
+/* ââ CALLOUTS ââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.callout{
+  display:flex;gap:12px;padding:14px 16px;border-radius:8px;
+  border:1px solid;margin:18px 0;font-size:14px;line-height:1.65;
+}
+.callout-ico{font-size:16px;flex-shrink:0;padding-top:1px}
+.callout-body{flex:1}
+.callout-body strong{display:block;font-size:12px;font-weight:700;letter-spacing:.05em;text-transform:uppercase;margin-bottom:4px}
+.c-info{background:#eff6ff;border-color:#bfdbfe;color:#1e40af}
+.c-tip{background:var(--green-bg);border-color:#a7f3d0;color:#065f46}
+.c-warn{background:var(--amber-bg);border-color:#fcd34d;color:#92400e}
+.c-note{background:var(--bg2);border-color:var(--border);color:var(--text2)}
+
+/* ââ CODE BLOCKS âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.codeblock{
+  background:#1e1e2e;border-radius:10px;
+  overflow:hidden;margin:16px 0;
+  border:1px solid #2a2a3e;
+}
+.cb-top{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:9px 16px;
+  background:#181825;border-bottom:1px solid #2a2a3e;
+}
+.cb-fname{font-family:var(--mono);font-size:11.5px;color:#6c7086;letter-spacing:.02em}
+.cb-right{display:flex;align-items:center;gap:10px}
+.cb-lang{font-family:var(--mono);font-size:10px;text-transform:uppercase;letter-spacing:.08em;color:#45475a}
+.cb-copy{
+  font-family:var(--mono);font-size:11px;
+  padding:2px 10px;border-radius:4px;cursor:pointer;
+  background:#313244;border:1px solid #45475a;
+  color:#cdd6f4;transition:all .15s;
+}
+.cb-copy:hover{background:#45475a;color:#a6e3a1}
+.cb-copy.ok{color:#a6e3a1;border-color:#a6e3a1}
+
+pre{padding:18px 20px;overflow-x:auto;font-family:var(--mono);font-size:13px;line-height:1.65;color:#cdd6f4}
+pre::-webkit-scrollbar{height:4px}
+pre::-webkit-scrollbar-thumb{background:#45475a;border-radius:2px}
+
+/* Catppuccin Mocha tokens */
+.k{color:#cba6f7}   /* keyword */
+.s{color:#a6e3a1}   /* string */
+.n{color:#fab387}   /* number */
+.c{color:#6c7086;font-style:italic} /* comment */
+.t{color:#89dceb}   /* key */
+.x{color:#f38ba8}   /* special */
+.p{color:#cdd6f4}   /* plain */
+.fn{color:#89b4fa}  /* function */
+
+/* ââ ENDPOINT CARD âââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.ep-card{
+  border:1px solid var(--border);border-radius:10px;
+  overflow:hidden;margin:18px 0;
+}
+.ep-head{
+  display:flex;align-items:center;gap:10px;
+  padding:12px 18px;background:var(--bg2);
+  border-bottom:1px solid var(--border);
+}
+.method{
+  font-family:var(--mono);font-size:12px;font-weight:600;
+  padding:3px 10px;border-radius:5px;
+}
+.m-post{background:#dcfce7;color:#166534}
+.m-get{background:#dbeafe;color:#1e40af}
+.ep-path{font-family:var(--mono);font-size:13.5px;font-weight:500;color:var(--text);flex:1}
+.ep-price{
+  font-family:var(--mono);font-size:12px;font-weight:500;
+  padding:3px 10px;border-radius:5px;
+}
+.ep-free{background:var(--green-bg);color:var(--green);border:1px solid #a7f3d0}
+.ep-paid{background:var(--amber-bg);color:var(--amber);border:1px solid #fcd34d}
+.ep-full{background:var(--accent-bg);color:var(--accent);border:1px solid var(--accent-border)}
+.ep-body{padding:18px}
+.ep-desc{font-size:14px;color:var(--text2);margin-bottom:16px}
+
+/* ââ PARAM TABLE âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.ptable{width:100%;border-collapse:collapse;margin:12px 0 16px;font-size:13.5px}
+.ptable thead th{
+  text-align:left;padding:8px 12px;
+  font-size:11px;text-transform:uppercase;letter-spacing:.08em;
+  color:var(--text3);font-weight:600;
+  background:var(--bg2);border:1px solid var(--border);
+}
+.ptable td{padding:10px 12px;border:1px solid var(--border);vertical-align:top}
+.pname{font-family:var(--mono);color:#0052ff;font-size:13px}
+.ptype{font-family:var(--mono);color:#7c3aed;font-size:12px}
+.preq{font-size:11px;color:#dc2626;font-weight:600}
+.popt{font-size:11px;color:var(--text4)}
+.pdesc{color:var(--text2);font-size:13.5px;line-height:1.6}
+
+/* ââ PRICING TABLE âââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.ptbl{width:100%;border-collapse:collapse;margin:12px 0 18px;border:1px solid var(--border);border-radius:8px;overflow:hidden}
+.ptbl thead th{background:var(--bg2);padding:10px 14px;text-align:left;font-size:11.5px;font-weight:600;text-transform:uppercase;letter-spacing:.07em;color:var(--text3);border-bottom:1px solid var(--border)}
+.ptbl td{padding:12px 14px;border-bottom:1px solid var(--border);font-size:14px;vertical-align:top}
+.ptbl tr:last-child td{border-bottom:none}
+.ptbl tr:hover td{background:var(--bg2)}
+.price{font-family:var(--mono);font-weight:600;color:#d97706}
+.pfree{font-family:var(--mono);font-weight:600;color:var(--green)}
+td.mono{font-family:var(--mono);font-size:13px;color:var(--text)}
+td.muted{color:var(--text2)}
+
+/* ââ SOURCE GRID âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.src-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:10px;margin:14px 0}
+.src-card{padding:14px;border-radius:8px;border:1px solid var(--border);background:var(--bg)}
+.src-card:hover{border-color:var(--border2);background:var(--bg2)}
+.src-name{font-size:13px;font-weight:600;color:var(--text);margin-bottom:4px}
+.src-desc{font-size:12px;color:var(--text3);line-height:1.5}
+.src-tag{display:inline-block;margin-top:7px;font-size:10.5px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:var(--green-bg);color:var(--green);border:1px solid #a7f3d0}
+.src-tag.key{background:var(--amber-bg);color:var(--amber);border-color:#fcd34d}
+
+/* ââ STRATEGY CARDS ââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.strat-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.strat-card{padding:16px;border-radius:8px;border:1px solid var(--border);background:var(--bg)}
+.strat-card:hover{border-color:var(--border2)}
+.strat-icon{font-size:20px;margin-bottom:8px}
+.strat-name{font-size:14px;font-weight:600;color:var(--text);margin-bottom:5px}
+.strat-desc{font-size:13px;color:var(--text2);line-height:1.55}
+.strat-tags{display:flex;flex-wrap:wrap;gap:4px;margin-top:10px}
+.strat-tag{font-size:11px;font-family:var(--mono);padding:2px 7px;border-radius:4px;background:var(--bg2);color:var(--text3);border:1px solid var(--border)}
+
+/* ââ PAGE HEADER CARD ââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.page-tags{display:flex;flex-wrap:wrap;gap:6px;margin:16px 0 28px}
+.ptag{
+  padding:3px 10px;border-radius:20px;
+  font-size:12px;font-family:var(--mono);
+  background:var(--bg2);border:1px solid var(--border);color:var(--text3);
+}
+.ptag.blue{background:var(--accent-bg);border-color:var(--accent-border);color:var(--accent)}
+.ptag.green{background:var(--green-bg);border-color:#a7f3d0;color:var(--green)}
+
+/* ââ STATUS PILL âââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.status-pill{
+  display:inline-flex;align-items:center;gap:5px;
+  font-size:12px;font-family:var(--mono);color:var(--green);
+  background:var(--green-bg);border:1px solid #a7f3d0;
+  padding:3px 10px;border-radius:20px;
+}
+.dot{width:6px;height:6px;border-radius:50%;background:var(--green);animation:blink 2s infinite}
+@keyframes blink{0%,100%{opacity:1}50%{opacity:.3}}
+
+/* ââ BASE ADDRESS ââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.addr-block{
+  display:flex;align-items:center;gap:10px;justify-content:space-between;
+  padding:12px 16px;border-radius:8px;
+  background:var(--code-bg);border:1px solid var(--code-border);
+  font-family:var(--mono);font-size:13px;color:var(--text);
+  margin:12px 0;word-break:break-all;
+}
+.addr-copy{
+  flex-shrink:0;font-size:11px;font-family:var(--mono);
+  padding:3px 10px;border-radius:4px;cursor:pointer;
+  background:var(--bg);border:1px solid var(--border);
+  color:var(--text3);transition:all .15s;
+}
+.addr-copy:hover{border-color:var(--accent);color:var(--accent)}
+
+/* ââ DIVIDER âââââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+.divider{height:1px;background:var(--border);margin:32px 0}
+
+/* ââ RESPONSIVE ââââââââââââââââââââââââââââââââââââââââââââââââââââââââ */
+@media(max-width:1100px){
+  .toc{display:none}
+  .content{margin-right:0;max-width:100%}
+}
+@media(max-width:800px){
+  .leftnav{display:none}
+  .content{margin-left:0;padding:24px 20px 80px}
+  .strat-grid{grid-template-columns:1fr}
+  .subnav{overflow-x:auto}
+}
+</style>
+</head>
+<body>
+
+<!-- TOP BAR -->
+<header class="topbar">
+  <a href="/" class="top-logo">
+    <div class="logo-mark">P</div>
+    <span class="logo-text">Prop<span>X402</span></span>
+  </a>
+  <span class="top-label">Docs</span>
+
+  <div class="search-bar">
+    <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.35-4.35"/></svg>
+    <input type="text" placeholder="Search docs..." id="searchInput" onkeydown="if(e&&e.key==='Escape')this.blur()">
+    <span class="search-kbd">âK</span>
+  </div>
+
+  <div class="top-right">
+    <button class="ai-btn">
+      <span class="ai-star">â¦</span>
+      Ask AI
+    </button>
+    <a href="https://github.com" class="top-btn top-btn-ghost" target="_blank">
+      <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 0 1 5.83 1c0 2-3 3-3 3"/><path d="M12 17h.01"/></svg>
+      Get help
+    </a>
+    <a href="https://propx402.vercel.app" class="top-btn top-btn-primary" target="_blank">
+      Home
+      <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    </a>
+  </div>
+</header>
+
+<!-- SUB NAV -->
+<nav class="subnav">
+  <a class="subnav-item on" onclick="showSection('docs')">Docs</a>
+  <a class="subnav-item" onclick="showSection('api')">API Reference</a>
+  <a class="subnav-item" href="/health" target="_blank">Status</a>
+  <a class="subnav-item" href="/.well-known/mcp" target="_blank">MCP Schema</a>
+</nav>
+
+<div class="shell">
+
+<!-- LEFT NAV -->
+<nav class="leftnav">
+
+  <div class="nav-section-label">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><path d="M12 8v4l3 3"/></svg>
+    Get Started
+  </div>
+  <a class="nav-link on" onclick="scrollTo('intro')">Introduction</a>
+  <a class="nav-link" onclick="scrollTo('quickstart')">Quickstart</a>
+  <a class="nav-link" onclick="scrollTo('x402')">x402 Protocol</a>
+  <a class="nav-link" onclick="scrollTo('pricing')">Pricing</a>
+
+  <div class="nav-section-label" style="margin-top:8px">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><polyline points="14 2 14 8 20 8"/></svg>
+    Endpoints
+  </div>
+  <a class="nav-link" onclick="scrollTo('ep-health')">
+    <span>GET /health</span>
+    <span style="font-size:11px;color:var(--green);font-family:var(--mono);background:var(--green-bg);padding:1px 6px;border-radius:3px">FREE</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('ep-intel')">
+    <span>/property-intel</span>
+    <span style="font-size:11px;color:var(--amber);font-family:var(--mono);background:var(--amber-bg);padding:1px 6px;border-radius:3px">$0.05</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('ep-investor')">
+    <span>/property-investor</span>
+    <span style="font-size:11px;color:var(--amber);font-family:var(--mono);background:var(--amber-bg);padding:1px 6px;border-radius:3px">$0.15</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('ep-narrative')">
+    <span>/property-narrative</span>
+    <span style="font-size:11px;color:var(--amber);font-family:var(--mono);background:var(--amber-bg);padding:1px 6px;border-radius:3px">$0.10</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('ep-full')">
+    <span>/property-full</span>
+    <span style="font-size:11px;color:var(--accent);font-family:var(--mono);background:var(--accent-bg);padding:1px 6px;border-radius:3px">$0.25</span>
+  </a>
+  <a class="nav-link" onclick="scrollTo('ep-bulk')">
+    <span>/property-bulk</span>
+    <span style="font-size:11px;color:var(--accent);font-family:var(--mono);background:var(--accent-bg);padding:1px 6px;border-radius:3px">$0.03/ea</span>
+  </a>
+
+  <div class="nav-section-label" style="margin-top:8px">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="3" width="20" height="14" rx="2"/><path d="M8 21h8M12 17v4"/></svg>
+    Test Mode
+  </div>
+  <a class="nav-link" onclick="scrollTo('test-mode')">
+    <span>Free Test Endpoints</span>
+    <span style="font-size:11px;color:var(--green);font-family:var(--mono);background:var(--green-bg);padding:1px 6px;border-radius:3px">FREE</span>
+  </a>
+
+  <div class="nav-section-label" style="margin-top:8px">
+    <svg width="12" height="12" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M4 19.5A2.5 2.5 0 0 1 6.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 0 1 4 19.5v-15A2.5 2.5 0 0 1 6.5 2z"/></svg>
+    Reference
+  </div>
+  <a class="nav-link" onclick="scrollTo('data-sources')">Data Sources</a>
+  <a class="nav-link" onclick="scrollTo('strategies')">Investor Strategies</a>
+  <a class="nav-link" onclick="scrollTo('hidden-costs')">Hidden Cost Engine</a>
+  <a class="nav-link" onclick="scrollTo('mcp')">MCP Integration</a>
+  <a class="nav-link" onclick="scrollTo('errors')">Errors &amp; Limits</a>
+
+</nav>
+
+<!-- CONTENT -->
+<main class="content">
+
+  <!-- INTRO -->
+  <div class="section" id="intro">
+    <div class="breadcrumb">
+      <a href="/">PropX402</a>
+      <span class="breadcrumb-sep">âº</span>
+      <span>Documentation</span>
+    </div>
+
+    <div style="display:flex;align-items:center;gap:10px;margin-bottom:10px">
+      <span style="font-size:13px;font-weight:600;color:var(--text3);text-transform:uppercase;letter-spacing:.08em">PropX402</span>
+    </div>
+
+    <h1>Welcome to PropX402</h1>
+
+    <div class="page-tags">
+      <span class="ptag green">â API Operational</span>
+      <span class="ptag blue">v2.0.0</span>
+      <span class="ptag">base-mainnet</span>
+      <span class="ptag">x402 Protocol</span>
+      <span class="ptag">REST API</span>
+    </div>
+
+    <h2 id="overview">Overview</h2>
+    <p>PropX402 is a real estate property intelligence API built for AI agents. It aggregates <strong>14 government and public data sources</strong> into a single structured response â delivered in 3â8 seconds.</p>
+    <p>Payments are handled natively via the <strong>x402 protocol</strong> on Base network. No API keys, no subscriptions, no dashboards. Agents pay per query in USDC and receive structured JSON intelligence instantly.</p>
+
+    <h2 id="who-is-it-for">Who is PropX402 for?</h2>
+    <ul>
+      <li><strong>AI real estate agents</strong> â structured property data without scraping or manual lookups</li>
+      <li><strong>Investor tools</strong> â run Fix &amp; Flip, BRRRR, STR, Co-Living, and Subject-To deal analysis at scale</li>
+      <li><strong>Autonomous agents</strong> â ElizaOS, GOAT, LangChain, or any x402-enabled agent framework</li>
+      <li><strong>MCP clients</strong> â Claude Desktop, Cursor, or any MCP-compatible tool</li>
+    </ul>
+
+    <h2 id="key-features">Key Features</h2>
+    <ul>
+      <li><strong>14 data sources</strong> in a single request â property, flood, walkability, demographics, hazards, broadband, jobs, disasters, and more</li>
+      <li><strong>5 investor strategy engines</strong> â Fix &amp; Flip, Co-Living, Subject-To, STR, BRRRR with real projections</li>
+      <li><strong>Hidden cost discovery</strong> â insurance estimates, lead paint risk, knob &amp; tube wiring, asbestos flags</li>
+      <li><strong>AI narrative</strong> â Claude Sonnet-generated investment analysis in natural language</li>
+      <li><strong>No registration</strong> â x402 machine-to-machine payments, pay only what you query</li>
+    </ul>
+
+    <div class="callout c-tip">
+      <div class="callout-ico">ð¡</div>
+      <div class="callout-body">
+        <strong>New to x402?</strong>
+        x402 is an open payment protocol by Coinbase that enables AI agents to pay for API access autonomously using USDC on Base. No accounts or sessions required â just pay per request.
+      </div>
+    </div>
+  </div>
+
+  <!-- QUICKSTART -->
+  <div class="section" id="quickstart">
+    <h2 id="quickstart-h">Quickstart</h2>
+    <p>The fastest way to test PropX402 is via the free <code>/test/</code> endpoints â no wallet, no payment, no configuration needed.</p>
+
+    <h3>1. Check API status</h3>
+    <div class="codeblock">
+      <div class="cb-top">
+        <span class="cb-fname">Shell</span>
+        <div class="cb-right"><span class="cb-lang">cURL</span><button class="cb-copy" onclick="copyMe(this)">Copy</button></div>
+      </div>
+      <pre><span class="fn">curl</span> <span class="s">https://propx402.vercel.app/health</span></pre>
+    </div>
+
+    <h3>2. Free property intelligence test</h3>
+    <div class="codeblock">
+      <div class="cb-top">
+        <span class="cb-fname">POST /test/property-intel</span>
+        <div class="cb-right"><span class="cb-lang">cURL</span><button class="cb-copy" onclick="copyMe(this)">Copy</button></div>
+      </div>
+      <pre><span class="fn">curl</span> -X POST <span class="s">https://propx402.vercel.app/test/property-intel</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{"address": "1411 8th Ave SE, Cedar Rapids, IA 52403"}'</span></pre>
+    </div>
+
+    <h3>3. Free investor strategy test</h3>
+    <div class="codeblock">
+      <div class="cb-top">
+        <span class="cb-fname">POST /test/property-investor</span>
+        <div class="cb-right"><span class="cb-lang">cURL</span><button class="cb-copy" onclick="copyMe(this)">Copy</button></div>
+      </div>
+      <pre><span class="fn">curl</span> -X POST <span class="s">https://propx402.vercel.app/test/property-investor</span> \
+  -H <span class="s">"Content-Type: application/json"</span> \
+  -d <span class="s">'{"address": "1411 8th Ave SE, Cedar Rapids, IA 52403", "condition": "fair"}'</span></pre>
+    </div>
+
+    <h3>4. Production query (with x402 payment)</h3>
+    <div class="codeblock">
+      <div class="cb-top">
+        <span class="cb-fname">x402-fetch â JavaScript</span>
+        <div class="cb-right"><span class="cb-lang">JS</span><button class="cb-copy" onclick="copyMe(this)">Copy</button></div>
+      </div>
+      <pre><span class="k">import</span> <span class="p">{</span> withPaymentInterceptor <span class="p">}</span> <span class="k">from</span> <span class="s">"x402-fetch"</span><span class="p">;</span>
+
+<span class="k">const</span> fetch402 <span class="p">=</span> withPaymentInterceptor(fetch, walletClient)<span class="p">;</span>
+
+<span class="k">const</span> res <span class="p">=</span> <span class="k">await</span> fetch402(<span class="s">"https://propx402.vercel.app/property-investor"</span><span class="p">, {</span>
+  method: <span class="s">"POST"</span><span class="p">,</span>
+  headers: <span class="p">{</span> <span class="s">"Content-Type"</span>: <span class="s">"application/json"</span> <span class="p">},</span>
+  body: JSON.stringify<span class="p">({</span>
+    address: <span class="s">"1411 8th Ave SE, Cedar Rapids, IA 52403"</span><span class="p">,</span>
+    condition: <span class="s">"fair"</span>
+  <span class="p">})</span>
+<span class="p">});</span>
+<span class="k">const</span> <span class="p">{</span> data <span class="p">}</span> <span class="p">=</span> <span class="k">await</span> res.json()<span class="p">;</span>
+<span class="c">// data.investorAnalysis.recommendedStrategy â "Short-Term Rental"</span></pre>
+    </div>
+
+    <div class="codeblock">
+      <div class="cb-top">
+        <span class="cb-fname">x402-requests â Python</span>
+        <div class="cb-right"><span class="cb-lang">Python</span><button class="cb-copy" onclick="copyMe(this)">Copy</button></div>
+      </div>
+      <pre><span class="k">from</span> x402.requests <span class="k">import</span> X402Session
+
+session <span class="p">=</span> X402Session(private_key<span class="p">=</span><span class="s">"0xYOUR_WALLET_KEY"</span>)
+
+response <span class="p">=</span> session.post(
+    <span class="s">"https://propx402.vercel.app/property-full"</span><span class="p">,</span>
+    json<span class="p">={</span><span class="s">"address"</span>: <span class="s">"1411 8th Ave SE, Cedar Rapids, IA 52403"</span><span class="p">}</span>
+)
+<span class="k">print</span>(response.json()<span class="p">[</span><span class="s">"data"</span><span class="p">][</span><span class="s">"investorAnalysis"</span><span class="p">][</span><span class="s">"investorScore"</span><span class="p">])</span>  <span class="c"># â 70</span></pre>
+    </div>
+  </div>
+
+  <!-- X402 -->
+  <div class="section" id="x402">
+    <h2 id="x402-protocol">x402 Protocol</h2>
+    <p>PropX402 uses the <strong>x402 open payment protocol</strong> developed by Coinbase. Instead of API keys or subscriptions, agents pay per request in USDC on Base mainnet â autonomously, with no accounts or sessions.</p>
+
+    <div class="callout c-info">
+      <div class="callout-ico">â¹ï¸</div>
+      <div class="callout-body">
+        <strong>How x402 works</strong>
+        1 Â· Agent sends a normal HTTP POST to a paid endpoint<br>
+        2 Â· Server responds with <code>402 Payment Required</code> + a payment payload<br>
+        3 Â· x402 client signs and broadcasts a USDC transfer on Base mainnet<br>
+        4 Â· Request is retried automatically with the payment proof header<br>
+        5 Â· Server verifies payment on-chain â returns data
+      </div>
+    </div>
+
+    <h3>Payment receiver</h3>
+    <p>All payments settle directly to this address on Base mainnet with no intermediaries:</p>
+    <div class="addr-block">
+      <span>0xCFA4F055621356974dFA4846a6e0047f593C4dDA</span>
+      <button class="addr-copy" onclick="copyAddr(this)">Copy</button>
+    </div>
+
+    <h3>Requirements</h3>
+    <ul>
+      <li>EVM wallet on <strong>Base mainnet</strong> (Coinbase Wallet, MetaMask, or any Base-compatible wallet)</li>
+      <li>USDC balance on Base â bridge at <a href="https://bridge.base.org" target="_blank">bridge.base.org</a> or buy directly</li>
+      <li>x402-compatible HTTP client â <a href="https://github.com/coinbase/x402" target="_blank">x402 SDK on GitHub</a></li>
+    </ul>
+
+    <h3>Facilitator endpoint</h3>
+    <div class="codeblock">
+      <div class="cb-top"><span class="cb-fname">x402 Facilitator</span><div class="cb-right"><button class="cb-copy" onclick="copyMe(this)">Copy</button></div></div>
+      <pre><span class="s">https://x402.org/facilitator</span></pre>
+    </div>
+  </div>
+
+  <!-- PRICING -->
+  <div class="section" id="pricing">
+    <h2 id="pricing-h">Pricing</h2>
+    <p>Pay per query in USDC on Base. No minimums, no subscriptions, no monthly fees. Payments settle directly to the API wallet â no processors or chargebacks.</p>
+
+    <table class="ptbl">
+      <thead>
+        <tr><th>Endpoint</th><th>Price (USDC)</th><th>Description</th></tr>
+      </thead>
+      <tbody>
+        <tr><td class="mono">/health</td><td><span class="pfree">FREE</span></td><td class="muted">API status, endpoint directory, version</td></tr>
+        <tr><td class="mono">/test/*</td><td><span class="pfree">FREE</span></td><td class="muted">All endpoints, dev use only, no wallet needed</td></tr>
+        <tr><td class="mono">/property-intel</td><td><span class="price">$0.05</span></td><td class="muted">14-source property intelligence report</td></tr>
+        <tr><td class="mono">/property-investor</td><td><span class="price">$0.15</span></td><td class="muted">5 investment strategy analyses + hidden costs</td></tr>
+        <tr><td class="mono">/property-narrative</td><td><span class="price">$0.10</span></td><td class="muted">Claude AI-generated investment analysis</td></tr>
+        <tr><td class="mono">/property-full</td><td><span class="price">$0.25</span></td><td class="muted">Intel + investor analysis + AI narrative combined</td></tr>
+        <tr><td class="mono">/property-bulk</td><td><span class="price">$0.03/ea</span></td><td class="muted">Bulk intel on up to 20 addresses per call</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+  <h4>Endpoint Reference</h4>
+
+  <!-- /health -->
+  <div class="section" id="ep-health">
+    <h2 id="get-health">GET /health</h2>
+    <div class="ep-card">
+      <div class="ep-head">
+        <span class="method m-get">GET</span>
+        <span class="ep-path">/health</span>
+        <span class="ep-price ep-free">FREE</span>
+      </div>
+      <div class="ep-body">
+        <p class="ep-desc">Returns API status, version, the full endpoint directory with pricing, data source list, and investor strategy names. Use for agent discovery and uptime monitoring.</p>
+        <h4>Response example</h4>
+        <div class="codeblock">
+          <div class="cb-top"><span class="cb-fname">200 OK</span><div class="cb-right"><button class="cb-copy" onclick="copyMe(this)">Copy</button></div></div>
+          <pre><span class="p">{</span>
+  <span class="t">"status"</span>: <span class="s">"online"</span><span class="p">,</span>
+  <span class="t">"name"</span>: <span class="s">"PropX402"</span><span class="p">,</span> <span class="t">"version"</span>: <span class="s">"2.0.0"</span><span class="p">,</span>
+  <span class="t">"protocol"</span>: <span class="s">"x402"</span><span class="p">,</span> <span class="t">"network"</span>: <span class="s">"base-mainnet"</span><span class="p">,</span>
+  <span class="t">"dataSources"</span>: [<span class="s">"OpenStreetMap"</span><span class="p">,</span> <span class="s">"RentCast"</span><span class="p">,</span> <span class="s">"FEMA"</span><span class="p">,</span> <span class="c">/* +11 */</span>]<span class="p">,</span>
+  <span class="t">"investorStrategies"</span>: [<span class="s">"Fix &amp; Flip"</span><span class="p">,</span> <span class="s">"Co-Living"</span><span class="p">,</span> <span class="s">"Subject-To"</span><span class="p">,</span> <span class="s">"Short-Term Rental"</span><span class="p">,</span> <span class="s">"BRRRR"</span>]<span class="p">,</span>
+  <span class="t">"powered_by"</span>: <span class="s">"Big Bang Interactive LLC"</span>
+<span class="p">}</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- /property-intel -->
+  <div class="section" id="ep-intel">
+    <h2 id="property-intel">POST /property-intel</h2>
+    <div class="ep-card">
+      <div class="ep-head">
+        <span class="method m-post">POST</span>
+        <span class="ep-path">/property-intel</span>
+        <span class="ep-price ep-paid">$0.05 USDC</span>
+      </div>
+      <div class="ep-body">
+        <p class="ep-desc">Aggregates 14 data sources in parallel into a comprehensive property intelligence report. Includes property valuation, rent estimate, flood zone, walkability score, census demographics, environmental data, earthquake and tornado hazards, broadband availability, HUD opportunity zone status, FRED housing price index, BLS job market data, and FEMA disaster history.</p>
+
+        <h4>Request body</h4>
+        <table class="ptable">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="pname">address</span></td>
+              <td><span class="ptype">string</span></td>
+              <td><span class="preq">Required</span></td>
+              <td><span class="pdesc">Full US property address including city, state, and zip. E.g. <code>"1411 8th Ave SE, Cedar Rapids, IA 52403"</code></span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Response shape</h4>
+        <div class="codeblock">
+          <div class="cb-top"><span class="cb-fname">data object</span><div class="cb-right"><button class="cb-copy" onclick="copyMe(this)">Copy</button></div></div>
+          <pre><span class="p">{</span>
+  <span class="t">"location"</span>: <span class="p">{</span> <span class="t">"address"</span><span class="p">,</span> <span class="t">"lat"</span><span class="p">,</span> <span class="t">"lon"</span><span class="p">,</span> <span class="t">"city"</span><span class="p">,</span> <span class="t">"state"</span><span class="p">,</span> <span class="t">"stateCode"</span><span class="p">,</span> <span class="t">"zip"</span><span class="p">,</span> <span class="t">"county"</span> <span class="p">},</span>
+  <span class="t">"property"</span>: <span class="p">{</span>
+    <span class="t">"propertyType"</span><span class="p">,</span> <span class="t">"bedrooms"</span><span class="p">,</span> <span class="t">"bathrooms"</span><span class="p">,</span> <span class="t">"squareFeet"</span><span class="p">,</span> <span class="t">"yearBuilt"</span><span class="p">,</span>
+    <span class="t">"lastSaleDate"</span><span class="p">,</span> <span class="t">"lastSalePrice"</span><span class="p">,</span>
+    <span class="t">"rentEstimate"</span>: <span class="p">{</span> <span class="t">"rentLow"</span><span class="p">,</span> <span class="t">"rentEstimate"</span><span class="p">,</span> <span class="t">"rentHigh"</span><span class="p">,</span> <span class="t">"comparables"</span> <span class="p">},</span>
+    <span class="t">"valueEstimate"</span>: <span class="p">{</span> <span class="t">"valueLow"</span><span class="p">,</span> <span class="t">"valueEstimate"</span><span class="p">,</span> <span class="t">"valueHigh"</span> <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="t">"floodRisk"</span>:       <span class="p">{</span> <span class="t">"zone"</span><span class="p">,</span> <span class="t">"riskLevel"</span><span class="p">,</span> <span class="t">"inFloodZone"</span>: <span class="k">bool</span> <span class="p">},</span>
+  <span class="t">"walkability"</span>:     <span class="p">{</span> <span class="t">"walkScore"</span>: <span class="n">0-100</span><span class="p">,</span> <span class="t">"walkLabel"</span><span class="p">,</span> <span class="t">"totalAmenitiesNearby"</span> <span class="p">},</span>
+  <span class="t">"neighborhood"</span>:    <span class="p">{</span> <span class="t">"population"</span><span class="p">,</span> <span class="t">"medianHouseholdIncome"</span><span class="p">,</span> <span class="t">"medianHomeValue"</span><span class="p">,</span> <span class="t">"vacancyRate"</span> <span class="p">},</span>
+  <span class="t">"environment"</span>:     <span class="p">{</span> <span class="t">"airQualityPercentile"</span><span class="p">,</span> <span class="t">"superfundProximityPercentile"</span> <span class="p">},</span>
+  <span class="t">"naturalHazards"</span>:  <span class="p">{</span> <span class="t">"earthquakeHazard"</span><span class="p">,</span> <span class="t">"tornadoRisk"</span><span class="p">,</span> <span class="t">"hailRisk"</span> <span class="p">},</span>
+  <span class="t">"infrastructure"</span>:  <span class="p">{</span> <span class="t">"broadband"</span>: <span class="p">{</span> <span class="t">"hasGigabit"</span><span class="p">,</span> <span class="t">"hasFiber"</span><span class="p">,</span> <span class="t">"maxDownloadMbps"</span> <span class="p">}</span> <span class="p">},</span>
+  <span class="t">"hudIntelligence"</span>: <span class="p">{</span> <span class="t">"opportunityZone"</span><span class="p">,</span> <span class="t">"fairMarketRent"</span> <span class="p">},</span>
+  <span class="t">"marketTrends"</span>:    <span class="p">{</span> <span class="t">"yearOverYearAppreciation"</span>: <span class="s">"4.02%"</span><span class="p">,</span> <span class="t">"trend"</span>: <span class="s">"Appreciating"</span> <span class="p">},</span>
+  <span class="t">"jobMarket"</span>:       <span class="p">{</span> <span class="t">"stateUnemploymentRate"</span><span class="p">,</span> <span class="t">"unemploymentTrend"</span><span class="p">,</span> <span class="t">"investorSignal"</span> <span class="p">},</span>
+  <span class="t">"disasterHistory"</span>: <span class="p">{</span> <span class="t">"totalFederalDisasters"</span><span class="p">,</span> <span class="t">"floodDeclarations"</span><span class="p">,</span> <span class="t">"recentDisasters"</span> <span class="p">},</span>
+  <span class="t">"riskScore"</span>: <span class="n">15</span><span class="p">,</span>          <span class="c">// 0â100 composite</span>
+  <span class="t">"riskLabel"</span>: <span class="s">"Low"</span><span class="p">,</span>       <span class="c">// Low | Moderate | High</span>
+  <span class="t">"meta"</span>: <span class="p">{</span> <span class="t">"processingMs"</span>: <span class="n">5850</span><span class="p">,</span> <span class="t">"dataSources"</span>: [<span class="s">"14 sources listed"</span>] <span class="p">}</span>
+<span class="p">}</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- /property-investor -->
+  <div class="section" id="ep-investor">
+    <h2 id="property-investor">POST /property-investor</h2>
+    <div class="ep-card">
+      <div class="ep-head">
+        <span class="method m-post">POST</span>
+        <span class="ep-path">/property-investor</span>
+        <span class="ep-price ep-paid">$0.15 USDC</span>
+      </div>
+      <div class="ep-body">
+        <p class="ep-desc">Runs the full investor analysis engine. Returns five investment strategy models, a ranked recommendation, derived financial metrics, hidden cost discovery, and state-level regulatory intelligence.</p>
+
+        <h4>Request body</h4>
+        <table class="ptable">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr>
+              <td><span class="pname">address</span></td><td><span class="ptype">string</span></td><td><span class="preq">Required</span></td>
+              <td><span class="pdesc">Full US property address</span></td>
+            </tr>
+            <tr>
+              <td><span class="pname">condition</span></td><td><span class="ptype">string</span></td><td><span class="popt">Optional</span></td>
+              <td><span class="pdesc">Property condition for rehab cost calibration. One of <code>poor</code> <code>fair</code> <code>average</code> <code>good</code> <code>excellent</code>. Defaults to <code>average</code>.</span></td>
+            </tr>
+          </tbody>
+        </table>
+
+        <h4>Real example output â 1411 8th Ave SE, Cedar Rapids, IA (condition: fair)</h4>
+        <div class="codeblock">
+          <div class="cb-top"><span class="cb-fname">data.investorAnalysis</span><div class="cb-right"><button class="cb-copy" onclick="copyMe(this)">Copy</button></div></div>
+          <pre><span class="p">{</span>
+  <span class="t">"investorScore"</span>: <span class="n">70</span><span class="p">,</span> <span class="t">"investorScoreLabel"</span>: <span class="s">"â Good Opportunity"</span><span class="p">,</span>
+  <span class="t">"recommendedStrategy"</span>: <span class="s">"Short-Term Rental"</span><span class="p">,</span>
+  <span class="t">"strategyRanking"</span>: [
+    <span class="p">{</span> <span class="t">"name"</span>: <span class="s">"Short-Term Rental"</span><span class="p">,</span> <span class="t">"score"</span>: <span class="n">82</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="t">"name"</span>: <span class="s">"Co-Living"</span><span class="p">,</span>         <span class="t">"score"</span>: <span class="n">78</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="t">"name"</span>: <span class="s">"Sub-To"</span><span class="p">,</span>            <span class="t">"score"</span>: <span class="n">50</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="t">"name"</span>: <span class="s">"BRRRR"</span><span class="p">,</span>             <span class="t">"score"</span>: <span class="n">40</span> <span class="p">},</span>
+    <span class="p">{</span> <span class="t">"name"</span>: <span class="s">"Fix &amp; Flip"</span><span class="p">,</span>        <span class="t">"score"</span>: <span class="n">20</span> <span class="p">}</span>
+  ]<span class="p">,</span>
+  <span class="t">"strategies"</span>: <span class="p">{</span>
+    <span class="t">"shortTermRental"</span>: <span class="p">{</span>
+      <span class="t">"estimatedNightlyRate"</span>: <span class="n">124</span><span class="p">,</span> <span class="t">"estimatedOccupancy"</span>: <span class="s">"45%"</span><span class="p">,</span>
+      <span class="t">"projectedAnnualRevenue"</span>: <span class="n">20447</span><span class="p">,</span> <span class="t">"strPremiumVsLTR"</span>: <span class="s">"45.6%"</span><span class="p">,</span>
+      <span class="t">"verdict"</span>: <span class="s">"ð¥ STR strongly outperforms LTR"</span>
+    <span class="p">},</span>
+    <span class="t">"subjectTo"</span>: <span class="p">{</span>
+      <span class="t">"estimatedRemainingBalance"</span>: <span class="n">94043</span><span class="p">,</span>
+      <span class="t">"estimatedOriginalRate"</span>: <span class="s">"2.96%"</span><span class="p">,</span>
+      <span class="t">"rateLockAdvantage"</span>: <span class="s">"ð¥ LOCKED at 2.96% â massive rate advantage"</span>
+    <span class="p">},</span>
+    <span class="t">"coLiving"</span>: <span class="p">{</span> <span class="t">"rentalPremium"</span>: <span class="s">"+36.1%"</span><span class="p">,</span> <span class="t">"verdict"</span>: <span class="s">"â Good co-living opportunity"</span> <span class="p">},</span>
+    <span class="t">"brrrr"</span>: <span class="p">{</span> <span class="t">"cashLeftInDeal"</span>: <span class="n">46260</span><span class="p">,</span> <span class="t">"verdict"</span>: <span class="s">"â Weak BRRRR â too much cash trapped"</span> <span class="p">},</span>
+    <span class="t">"fixAndFlip"</span>: <span class="p">{</span> <span class="t">"projectedProfit"</span>: <span class="n">-23892</span><span class="p">,</span> <span class="t">"verdict"</span>: <span class="s">"â Not recommended for flip"</span> <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="t">"derivedMetrics"</span>: <span class="p">{</span>
+    <span class="t">"capRate"</span>: <span class="s">"7.02%"</span><span class="p">,</span> <span class="t">"grossRentMultiplier"</span>: <span class="n">7.8</span><span class="p">,</span>
+    <span class="t">"onePercentRule"</span>: <span class="p">{</span> <span class="t">"ratio"</span>: <span class="s">"1.06%"</span><span class="p">,</span> <span class="t">"passes"</span>: <span class="k">true</span> <span class="p">},</span>
+    <span class="t">"debtServiceCoverageRatio"</span>: <span class="n">1.52</span><span class="p">,</span>
+    <span class="t">"valueVsNeighborhood"</span>: <span class="s">"â 15% below neighborhood median"</span>
+  <span class="p">},</span>
+  <span class="t">"hiddenCosts"</span>: <span class="p">{</span>
+    <span class="t">"estimatedInsurance"</span>: <span class="p">{</span> <span class="t">"estimatedMonthlyInsurance"</span>: <span class="n">142</span> <span class="p">},</span>
+    <span class="t">"rehabEstimate"</span>: <span class="p">{</span>
+      <span class="t">"estimatedRehabMid"</span>: <span class="n">86010</span><span class="p">,</span> <span class="t">"leadPaintRisk"</span>: <span class="s">"Very High"</span><span class="p">,</span>
+      <span class="t">"wiringRisk"</span>: <span class="s">"High â likely knob &amp; tube"</span>
+    <span class="p">}</span>
+  <span class="p">},</span>
+  <span class="t">"regulatoryIntelligence"</span>: <span class="p">{</span>
+    <span class="t">"landlordScore"</span>: <span class="p">{</span> <span class="t">"score"</span>: <span class="n">78</span><span class="p">,</span> <span class="t">"evictionWeeks"</span>: <span class="n">3</span><span class="p">,</span> <span class="t">"rentControl"</span>: <span class="k">false</span> <span class="p">},</span>
+    <span class="t">"marketTrend"</span>: <span class="s">"Appreciating"</span><span class="p">,</span> <span class="t">"appreciation"</span>: <span class="s">"4.02%"</span>
+  <span class="p">}</span>
+<span class="p">}</span></pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- /property-narrative -->
+  <div class="section" id="ep-narrative">
+    <h2 id="property-narrative">POST /property-narrative</h2>
+    <div class="ep-card">
+      <div class="ep-head">
+        <span class="method m-post">POST</span>
+        <span class="ep-path">/property-narrative</span>
+        <span class="ep-price ep-paid">$0.10 USDC</span>
+      </div>
+      <div class="ep-body">
+        <p class="ep-desc">Generates a human-readable investment analysis using Claude Sonnet. Synthesizes property data, market trends, and investor strategy scores into a structured written report â ideal for investor memos, agent summaries, and decision support.</p>
+        <h4>Request body</h4>
+        <table class="ptable">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pname">address</span></td><td><span class="ptype">string</span></td><td><span class="preq">Required</span></td><td><span class="pdesc">Full US property address</span></td></tr>
+          </tbody>
+        </table>
+        <div class="callout c-info">
+          <div class="callout-ico">â¹ï¸</div>
+          <div class="callout-body">
+            <strong>Claude Sonnet powered</strong>
+            The narrative covers property overview, market position, top strategy recommendation, risk factors, and due diligence priorities in natural language.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- /property-full -->
+  <div class="section" id="ep-full">
+    <h2 id="property-full">POST /property-full</h2>
+    <div class="ep-card">
+      <div class="ep-head">
+        <span class="method m-post">POST</span>
+        <span class="ep-path">/property-full</span>
+        <span class="ep-price ep-full">$0.25 USDC</span>
+      </div>
+      <div class="ep-body">
+        <p class="ep-desc">The complete package. Runs property intelligence + investor analysis + AI narrative in a single request. Returns the fully merged response â everything PropX402 knows about a property in one call.</p>
+        <h4>Request body</h4>
+        <table class="ptable">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pname">address</span></td><td><span class="ptype">string</span></td><td><span class="preq">Required</span></td><td><span class="pdesc">Full US property address</span></td></tr>
+            <tr><td><span class="pname">condition</span></td><td><span class="ptype">string</span></td><td><span class="popt">Optional</span></td><td><span class="pdesc">Property condition: <code>poor</code> <code>fair</code> <code>average</code> <code>good</code> <code>excellent</code></span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
+  <!-- /property-bulk -->
+  <div class="section" id="ep-bulk">
+    <h2 id="property-bulk">POST /property-bulk</h2>
+    <div class="ep-card">
+      <div class="ep-head">
+        <span class="method m-post">POST</span>
+        <span class="ep-path">/property-bulk</span>
+        <span class="ep-price ep-paid">$0.03 USDC / address</span>
+      </div>
+      <div class="ep-body">
+        <p class="ep-desc">Process up to 20 properties in a single request. All properties are analyzed in parallel. Ideal for portfolio screening and neighborhood comparisons.</p>
+        <h4>Request body</h4>
+        <table class="ptable">
+          <thead><tr><th>Parameter</th><th>Type</th><th>Required</th><th>Description</th></tr></thead>
+          <tbody>
+            <tr><td><span class="pname">addresses</span></td><td><span class="ptype">string[]</span></td><td><span class="preq">Required</span></td><td><span class="pdesc">Array of full US addresses. Maximum 20 per request.</span></td></tr>
+          </tbody>
+        </table>
+        <div class="callout c-warn">
+          <div class="callout-ico">â ï¸</div>
+          <div class="callout-body">
+            <strong>Payment scales with address count</strong>
+            20 addresses = $0.60 USDC total. Each address is attempted regardless of data availability.
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- TEST MODE -->
+  <div class="section" id="test-mode">
+    <h2 id="free-test-endpoints">Free Test Endpoints</h2>
+    <p>Every paid endpoint has a free development mirror under <code>/test/</code>. Identical request and response shapes, real data, no wallet required. Responses include <code>"mode": "TEST"</code>.</p>
+    <table class="ptbl">
+      <thead><tr><th>Test Endpoint</th><th>Mirrors</th></tr></thead>
+      <tbody>
+        <tr><td class="mono">/test/property-intel</td><td class="mono">/property-intel</td></tr>
+        <tr><td class="mono">/test/property-investor</td><td class="mono">/property-investor</td></tr>
+        <tr><td class="mono">/test/property-full</td><td class="mono">/property-full</td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="divider"></div>
+
+  <!-- DATA SOURCES -->
+  <div class="section" id="data-sources">
+    <h2 id="data-sources-h">Data Sources</h2>
+    <p>PropX402 queries <strong>14 public and government APIs</strong> in parallel. No private brokers â all sources are official databases, open registries, or free-tier APIs.</p>
+    <div class="src-grid">
+      <div class="src-card"><div class="src-name">OpenStreetMap</div><div class="src-desc">Geocoding â address to lat/lon + normalized string</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">RentCast</div><div class="src-desc">140M+ properties â AVM, rent estimates, property details</div><span class="src-tag key">Free tier key</span></div>
+      <div class="src-card"><div class="src-name">FEMA Flood Map</div><div class="src-desc">NFHL flood zone classification at property coordinates</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">OSM Overpass</div><div class="src-desc">Real amenity-based walkability â POI count within 800m</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">US Census ACS</div><div class="src-desc">5-year survey â income, home values, vacancy, demographics</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">EPA EJSCREEN</div><div class="src-desc">Environmental justice â air quality, superfund proximity</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">USGS NEHRP 2020</div><div class="src-desc">Earthquake hazard â peak ground acceleration at address</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">NOAA Severe Weather</div><div class="src-desc">Tornado and hail risk by state â feeds insurance estimates</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">FCC Broadband Map</div><div class="src-desc">Internet availability â gigabit access, fiber, provider count</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">HUD Opportunity Zones</div><div class="src-desc">Federal OZ designation â capital gains tax advantage</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">HUD Fair Market Rent</div><div class="src-desc">County FMR benchmarks â studio through 4BR</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">FRED (St. Louis Fed)</div><div class="src-desc">State housing price index â YoY appreciation trend</div><span class="src-tag key">Free API key</span></div>
+      <div class="src-card"><div class="src-name">BLS</div><div class="src-desc">State unemployment rate and trend â rental demand signal</div><span class="src-tag">FREE Â· No key</span></div>
+      <div class="src-card"><div class="src-name">OpenFEMA</div><div class="src-desc">Federal disaster history by county â floods, storms</div><span class="src-tag">FREE Â· No key</span></div>
+    </div>
+  </div>
+
+  <!-- STRATEGIES -->
+  <div class="section" id="strategies">
+    <h2 id="investor-strategies">Investor Strategies</h2>
+    <p>The <code>/property-investor</code> and <code>/property-full</code> endpoints run five independent investment models. Each produces a score (0â100), detailed projections, and a plain-language verdict.</p>
+
+    <div class="strat-grid">
+      <div class="strat-card">
+        <div class="strat-icon">ð¨</div>
+        <div class="strat-name">Fix &amp; Flip</div>
+        <div class="strat-desc">ARV from RentCast value high, minus rehab, holding costs, and closing costs. Returns MAO via the 70% rule.</div>
+        <div class="strat-tags"><span class="strat-tag">ARV</span><span class="strat-tag">Rehab Est.</span><span class="strat-tag">ROI %</span><span class="strat-tag">MAO</span></div>
+      </div>
+      <div class="strat-card">
+        <div class="strat-icon">ð </div>
+        <div class="strat-name">Co-Living</div>
+        <div class="strat-desc">Per-room rent vs. single-tenant rate. Returns rental premium, break-even occupancy, and annual revenue uplift.</div>
+        <div class="strat-tags"><span class="strat-tag">Per Room Rate</span><span class="strat-tag">Premium %</span><span class="strat-tag">Break-Even</span></div>
+      </div>
+      <div class="strat-card">
+        <div class="strat-icon">ð</div>
+        <div class="strat-name">Subject-To</div>
+        <div class="strat-desc">Reverse-engineers original mortgage using FRED historical rate by sale year. Returns remaining balance, PITI, and rate-lock advantage.</div>
+        <div class="strat-tags"><span class="strat-tag">Balance Est.</span><span class="strat-tag">Original Rate</span><span class="strat-tag">Rate Lock</span></div>
+      </div>
+      <div class="strat-card">
+        <div class="strat-icon">ðï¸</div>
+        <div class="strat-name">Short-Term Rental</div>
+        <div class="strat-desc">Estimates nightly rate and occupancy from walkability, income, and bedroom count. Compares STR vs LTR annual NOI.</div>
+        <div class="strat-tags"><span class="strat-tag">Nightly Rate</span><span class="strat-tag">Occupancy</span><span class="strat-tag">STR vs LTR</span></div>
+      </div>
+      <div class="strat-card">
+        <div class="strat-icon">ð°</div>
+        <div class="strat-name">BRRRR</div>
+        <div class="strat-desc">75% LTV refi model. Returns cash left in deal, monthly cash flow, and CoC return (infinite if full pull-out).</div>
+        <div class="strat-tags"><span class="strat-tag">75% LTV Refi</span><span class="strat-tag">Cash Left In</span><span class="strat-tag">CoC Return</span></div>
+      </div>
+      <div class="strat-card">
+        <div class="strat-icon">ð</div>
+        <div class="strat-name">Derived Metrics</div>
+        <div class="strat-desc">Standard investment metrics calculated on every investor call regardless of strategy.</div>
+        <div class="strat-tags"><span class="strat-tag">Cap Rate</span><span class="strat-tag">GRM</span><span class="strat-tag">1% Rule</span><span class="strat-tag">DSCR</span><span class="strat-tag">$/SqFt</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- HIDDEN COSTS -->
+  <div class="section" id="hidden-costs">
+    <h2 id="hidden-cost-engine">Hidden Cost Engine</h2>
+    <p>PropX402 automatically surfaces costs that investors miss before closing â derived from property age, construction era, weather exposure, and flood zone status.</p>
+
+    <h3>Insurance estimate</h3>
+    <p>Base rate of 0.8% annual property value, adjusted for age (up to +60% for 80+ year homes), tornado/hail risk (up to +40%), and flood zone status (NFIP average $1,200/yr added separately).</p>
+
+    <h3>Rehab cost estimate</h3>
+    <p>Base cost per sqft by age (8â52 $/sqft) Ã condition multiplier (0.2â1.8x):</p>
+    <ul>
+      <li><strong>Lead paint</strong> â pre-1978 flagged; pre-1940 rated Very High with $8K abatement in mid estimate</li>
+      <li><strong>Knob &amp; tube wiring</strong> â pre-1950 flagged with $8â15K rewire budget noted</li>
+      <li><strong>Asbestos</strong> â pre-1980 flagged with $2â8K testing/remediation range</li>
+    </ul>
+
+    <div class="callout c-note">
+      <div class="callout-ico">ðï¸</div>
+      <div class="callout-body">
+        <strong>Example â 1411 8th Ave SE, Cedar Rapids IA (built 1910)</strong>
+        Insurance: $142/mo Â· Rehab mid: $86,010 Â· Lead paint: Very High Â· Wiring: likely knob &amp; tube Â· Asbestos: possible. None of this appears on a listing sheet.
+      </div>
+    </div>
+  </div>
+
+  <!-- MCP -->
+  <div class="section" id="mcp">
+    <h2 id="mcp-integration">MCP Integration</h2>
+    <p>PropX402 exposes an MCP discovery schema at <code>/.well-known/mcp</code>, enabling native tool use with Claude Desktop, Cursor, and any MCP-compatible framework.</p>
+
+    <div class="codeblock">
+      <div class="cb-top"><span class="cb-fname">Discover MCP tools</span><div class="cb-right"><button class="cb-copy" onclick="copyMe(this)">Copy</button></div></div>
+      <pre><span class="fn">curl</span> <span class="s">https://propx402.vercel.app/.well-known/mcp</span></pre>
+    </div>
+
+    <h3>Available tools</h3>
+    <ul>
+      <li><code>get_property_intel</code> â 14-source property intelligence</li>
+      <li><code>get_property_investor</code> â 5 strategy analysis (accepts <code>condition</code>)</li>
+      <li><code>get_property_full</code> â complete report</li>
+      <li><code>get_property_bulk</code> â multi-property screening</li>
+    </ul>
+  </div>
+
+  <!-- ERRORS -->
+  <div class="section" id="errors">
+    <h2 id="errors-and-limits">Errors &amp; Limits</h2>
+
+    <table class="ptbl">
+      <thead><tr><th>Status</th><th>Meaning</th><th>Action</th></tr></thead>
+      <tbody>
+        <tr><td class="mono" style="color:#d97706">402</td><td class="muted">Payment Required</td><td class="muted">Expected â x402 client pays USDC on Base and retries automatically</td></tr>
+        <tr><td class="mono" style="color:var(--red)">400</td><td class="muted">Bad Request</td><td class="muted">Missing or empty <code>address</code> in request body</td></tr>
+        <tr><td class="mono" style="color:var(--red)">500</td><td class="muted">Intel Fetch Failed</td><td class="muted">Address not geocoded or critical upstream failure â check address format</td></tr>
+        <tr><td class="mono" style="color:var(--red)">504</td><td class="muted">Gateway Timeout</td><td class="muted">Vercel 30s limit exceeded â upstream API was slow, retry</td></tr>
+      </tbody>
+    </table>
+
+    <h3>Partial data</h3>
+    <p>PropX402 always returns a response even when individual sources fail. Failed sources return a <code>note</code> key instead of data. Only a geocoding failure produces a 500.</p>
+
+    <h3>Rate limits</h3>
+    <p>No hard rate limits â x402 payment is the natural rate limiter. Bulk requests are capped at 20 addresses. Vercel serverless enforces a 30-second execution timeout.</p>
+
+    <div class="divider"></div>
+    <p style="font-size:13px;color:var(--text3)">
+      Built by <strong style="color:var(--text2)">Big Bang Interactive LLC</strong> Â· Cedar Rapids, Iowa Â·
+      <a href="mailto:tinyprompters@gmail.com">tinyprompters@gmail.com</a><br>
+      Base network Â· x402 Protocol Â· USDC payments settle directly with no intermediaries.
+    </p>
+  </div>
+
+</main>
+
+<!-- RIGHT TOC -->
+<aside class="toc" id="toc">
+  <div class="toc-heading">On this page</div>
+  <a class="toc-item on" onclick="scrollTo('intro')">Overview</a>
+  <a class="toc-item" onclick="scrollTo('intro')">Who is it for?</a>
+  <a class="toc-item" onclick="scrollTo('quickstart')">Quickstart</a>
+  <a class="toc-item" onclick="scrollTo('x402')">x402 Protocol</a>
+  <a class="toc-item" onclick="scrollTo('pricing')">Pricing</a>
+  <a class="toc-item" onclick="scrollTo('ep-health')">/health</a>
+  <a class="toc-item" onclick="scrollTo('ep-intel')">/property-intel</a>
+  <a class="toc-item" onclick="scrollTo('ep-investor')">/property-investor</a>
+  <a class="toc-item" onclick="scrollTo('ep-narrative')">/property-narrative</a>
+  <a class="toc-item" onclick="scrollTo('ep-full')">/property-full</a>
+  <a class="toc-item" onclick="scrollTo('ep-bulk')">/property-bulk</a>
+  <a class="toc-item" onclick="scrollTo('data-sources')">Data Sources</a>
+  <a class="toc-item" onclick="scrollTo('strategies')">Investor Strategies</a>
+  <a class="toc-item" onclick="scrollTo('hidden-costs')">Hidden Cost Engine</a>
+  <a class="toc-item" onclick="scrollTo('mcp')">MCP Integration</a>
+  <a class="toc-item" onclick="scrollTo('errors')">Errors &amp; Limits</a>
+</aside>
+
+</div><!-- shell -->
+
+<script>
+function scrollTo(id) {
+  const el = document.getElementById(id);
+  if (el) el.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  // update left nav
+  document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('on'));
+  if (event && event.currentTarget) event.currentTarget.classList.add('on');
+}
+
+function copyMe(btn) {
+  const pre = btn.closest('.codeblock').querySelector('pre');
+  navigator.clipboard.writeText(pre.innerText).then(() => {
+    btn.textContent = 'â Copied';
+    btn.classList.add('ok');
+    setTimeout(() => { btn.textContent = 'Copy'; btn.classList.remove('ok'); }, 2000);
+  });
+}
+
+function copyAddr(btn) {
+  const addr = btn.closest('.addr-block').querySelector('span').textContent;
+  navigator.clipboard.writeText(addr).then(() => {
+    btn.textContent = 'â Copied';
+    setTimeout(() => { btn.textContent = 'Copy'; }, 2000);
+  });
+}
+
+function showSection(s) {
+  document.querySelectorAll('.subnav-item').forEach(i => i.classList.remove('on'));
+  event.currentTarget.classList.add('on');
+}
+
+// Scrollspy for TOC
+const sections = [...document.querySelectorAll('.section[id]')];
+const tocLinks = [...document.querySelectorAll('.toc-item')];
+const navLinks = [...document.querySelectorAll('.nav-link')];
+
+const obs = new IntersectionObserver(entries => {
+  entries.forEach(e => {
+    if (e.isIntersecting) {
+      const id = e.target.id;
+      tocLinks.forEach(t => {
+        t.classList.toggle('on', (t.getAttribute('onclick')||'').includes(`'${id}'`));
+      });
+    }
+  });
+}, { rootMargin: '-10% 0px -75% 0px' });
+
+sections.forEach(s => obs.observe(s));
+
+// Search shortcut
+document.addEventListener('keydown', e => {
+  if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+    e.preventDefault();
+    document.getElementById('searchInput').focus();
+  }
+});
+</script>
+</body>
+</html>
