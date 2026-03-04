@@ -1,88 +1,73 @@
 {
+  "$schema": "https://mintlify.com/docs.json",
+  "theme": "mint",
   "name": "PropX402",
-  "logo": {
-    "light": "/logo/light.svg",
-    "dark": "/logo/dark.svg"
-  },
-  "favicon": "/favicon.ico",
   "colors": {
     "primary": "#00e5a0",
     "light": "#00e5a0",
-    "dark": "#00b37d",
-    "background": {
-      "dark": "#0a0d12"
+    "dark": "#00b37d"
+  },
+  "navbar": {
+    "links": [
+      {
+        "label": "Home",
+        "href": "https://propx402.xyz"
+      }
+    ],
+    "primary": {
+      "type": "button",
+      "label": "API Status",
+      "href": "https://propx402.xyz/health"
     }
   },
-  "topbarLinks": [
-    {
-      "name": "Home",
-      "url": "https://propx402.xyz"
-    }
-  ],
-  "topbarCtaButton": {
-    "name": "API Status",
-    "url": "https://propx402.xyz/health"
+  "navigation": {
+    "tabs": [
+      {
+        "tab": "Docs",
+        "groups": [
+          {
+            "group": "Get Started",
+            "pages": [
+              "introduction",
+              "quickstart",
+              "x402-protocol"
+            ]
+          },
+          {
+            "group": "Endpoints",
+            "pages": [
+              "endpoints/health",
+              "endpoints/property-intel",
+              "endpoints/property-investor",
+              "endpoints/property-narrative",
+              "endpoints/property-full",
+              "endpoints/property-bulk",
+              "endpoints/test-mode"
+            ]
+          },
+          {
+            "group": "Reference",
+            "pages": [
+              "reference/data-sources",
+              "reference/investor-strategies",
+              "reference/hidden-costs",
+              "reference/mcp-integration",
+              "reference/errors"
+            ]
+          }
+        ]
+      }
+    ]
   },
-  "anchors": [
-    {
-      "name": "MCP Schema",
-      "icon": "robot",
-      "url": "https://propx402.xyz/.well-known/mcp"
-    },
-    {
-      "name": "x402 Protocol",
-      "icon": "link",
-      "url": "https://x402.org"
-    },
-    {
-      "name": "GitHub",
-      "icon": "github",
-      "url": "https://github.com/tinyprompters-maker/propx402"
-    }
-  ],
-  "navigation": [
-    {
-      "group": "Get Started",
-      "pages": [
-        "introduction",
-        "quickstart",
-        "x402-protocol"
-      ]
-    },
-    {
-      "group": "Endpoints",
-      "pages": [
-        "endpoints/health",
-        "endpoints/property-intel",
-        "endpoints/property-investor",
-        "endpoints/property-narrative",
-        "endpoints/property-full",
-        "endpoints/property-bulk",
-        "endpoints/test-mode"
-      ]
-    },
-    {
-      "group": "Reference",
-      "pages": [
-        "reference/data-sources",
-        "reference/investor-strategies",
-        "reference/hidden-costs",
-        "reference/mcp-integration",
-        "reference/errors"
-      ]
-    }
-  ],
   "redirects": [
     {
       "source": "/",
       "destination": "/introduction"
     }
   ],
-  "footerSocials": {
-    "x": "https://x.com/ChuckYouSuck"
-  },
-  "feedback": {
-    "thumbsRating": true
-  },
-  "theme": "mint"
+  "footer": {
+    "socials": {
+      "x": "https://x.com/ChuckYouSuck"
+    }
+  }
 }
