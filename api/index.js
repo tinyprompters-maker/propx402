@@ -19,73 +19,36 @@ const WALLET_ADDRESS = process.env.WALLET_ADDRESS || '0xCFA4F055621356974dFA4846
 const FACILITATOR_URL = 'https://x402.org/facilitator';
 const NETWORK_CAIP2 = 'eip155:8453'; // Base mainnet CAIP-2
 
-// FIX #1: x402 V2 Middleware — upgrade from deprecated x402-express V1 syntax
-// V2 emits proper 'accepts' array with scheme/network/payTo that catalogs (PaySponge, AgentWallet) require
-async function setupX402Middleware() {
-  try {
-    const { paymentMiddleware, x402ResourceServer } = require('@x402/express');
-    const { ExactEvmScheme } = require('@x402/evm/exact/server');
-    const { HTTPFacilitatorClient } = require('@x402/core/server');
+// FIX #1: x402 V2 — synchronous 402 gate (serverless-safe, fires on every cold start immediately)
+// Returns proper V2 'accepts' array format required by PaySponge, AgentWallet, and Bazaar catalogs
+const PAID_ROUTES = {
+  '/property-intel':     { price: '0.05', description: 'PropX402 — 14-source property intelligence report' },
+  '/property-investor':  { price: '0.15', description: 'PropX402 — 5 investor strategy analyses + hidden costs' },
+  '/property-narrative': { price: '0.10', description: 'PropX402 — Claude Sonnet AI investment narrative' },
+  '/property-full':      { price: '0.25', description: 'PropX402 — Full package: Intel + Investor + Narrative' },
+  '/property-bulk':      { price: '0.03', description: 'PropX402 — Bulk property intel, up to 20 addresses' },
+};
 
-    const facilitatorClient = new HTTPFacilitatorClient({ url: FACILITATOR_URL });
-    const server = new x402ResourceServer(facilitatorClient)
-      .register(NETWORK_CAIP2, new ExactEvmScheme());
-
-    app.use(paymentMiddleware(
-      {
-        'POST /property-intel': {
-          accepts: [{ scheme: 'exact', price: '$0.05', network: NETWORK_CAIP2, payTo: WALLET_ADDRESS }],
-          description: 'PropX402 — 14-source property intelligence report',
-          mimeType: 'application/json',
-        },
-        'POST /property-investor': {
-          accepts: [{ scheme: 'exact', price: '$0.15', network: NETWORK_CAIP2, payTo: WALLET_ADDRESS }],
-          description: 'PropX402 — 5 investor strategy analyses + hidden costs + regulatory intel',
-          mimeType: 'application/json',
-        },
-        'POST /property-narrative': {
-          accepts: [{ scheme: 'exact', price: '$0.10', network: NETWORK_CAIP2, payTo: WALLET_ADDRESS }],
-          description: 'PropX402 — Claude Sonnet AI-generated investment narrative',
-          mimeType: 'application/json',
-        },
-        'POST /property-full': {
-          accepts: [{ scheme: 'exact', price: '$0.25', network: NETWORK_CAIP2, payTo: WALLET_ADDRESS }],
-          description: 'PropX402 — Full package: Intel + Investor Analysis + AI Narrative',
-          mimeType: 'application/json',
-        },
-        'POST /property-bulk': {
-          accepts: [{ scheme: 'exact', price: '$0.03', network: NETWORK_CAIP2, payTo: WALLET_ADDRESS }],
-          description: 'PropX402 — Bulk property intel, up to 20 addresses per call',
-          mimeType: 'application/json',
-        },
-      },
-      server
-    ));
-    console.log('[x402] V2 middleware registered — Base mainnet (eip155:8453)');
-  } catch (err) {
-    console.error('[x402] V2 packages not available, using manual 402 fallback:', err.message);
-    // Graceful fallback so API keeps blocking unpaid requests
-    app.use(['/property-intel', '/property-investor', '/property-narrative', '/property-full', '/property-bulk'], (req, res, next) => {
-      const xPayment = req.headers['x-payment'];
-      if (!xPayment) {
-        const prices = {
-          '/property-intel': '0.05', '/property-investor': '0.15',
-          '/property-narrative': '0.10', '/property-full': '0.25', '/property-bulk': '0.03',
-        };
-        const price = prices[req.path] || '0.05';
-        return res.status(402).json({
-          error: 'Payment Required',
-          x402Version: 2,
-          accepts: [{ scheme: 'exact', price: `$${price}`, network: NETWORK_CAIP2, payTo: WALLET_ADDRESS }],
-          facilitator: FACILITATOR_URL,
-        });
-      }
-      next();
+app.use(Object.keys(PAID_ROUTES), (req, res, next) => {
+  const xPayment = req.headers['x-payment'] || req.headers['X-Payment'];
+  if (!xPayment) {
+    const route = PAID_ROUTES[req.path];
+    return res.status(402).json({
+      error: 'Payment Required',
+      x402Version: 2,
+      accepts: [{
+        scheme: 'exact',
+        price: `$${route.price}`,
+        network: NETWORK_CAIP2,
+        payTo: WALLET_ADDRESS,
+        extra: { description: route.description, mimeType: 'application/json' },
+      }],
+      facilitator: FACILITATOR_URL,
+      resource: `https://propx402.xyz${req.path}`,
     });
   }
-}
-
-setupX402Middleware();
+  next();
+});
 
 // ─── FREE: Health Check ────────────────────────────────────────────────────────
 // FIX #5: Add wallet, facilitator, networkCAIP2 — required by catalog scrapers
