@@ -10,7 +10,7 @@ const app = express();
 app.use(cors({
   origin: '*',
   exposedHeaders: ['X-PAYMENT-RESPONSE', 'X-Payment-Response', 'Content-Type'],
-  allowedHeaders: ['Content-Type', 'X-PAYMENT', 'X-Payment', 'Authorization'],
+  allowedHeaders: ['Content-Type', 'X-PAYMENT', 'X-Payment', 'Authorization', 'X-Sponge-Verified', 'X-Sponge-Service-Key'],
 }));
 
 app.use(express.json());
@@ -19,7 +19,20 @@ const WALLET_ADDRESS = process.env.WALLET_ADDRESS || '0xCFA4F055621356974dFA4846
 const FACILITATOR_URL = 'https://x402.org/facilitator';
 const NETWORK_CAIP2 = 'eip155:8453';
 const VERSION = '2.1.0';
+const SPONGE_SERVICE_ID = process.env.SPONGE_SERVICE_ID || 'svc_d6mwavrfgm7z9zqv8';
 
+// ─── Sponge Gateway Verification ─────────────────────────────────────────────
+// Sponge proxies verified requests with X-Sponge-Verified: true
+// Optionally also sends X-Sponge-Service-Key for extra security
+function verifySponge(req) {
+  const verified = req.headers['x-sponge-verified'];
+  const serviceKey = req.headers['x-sponge-service-key'] || req.headers['x-gateway-key'];
+  const SPONGE_SECRET = process.env.SPONGE_SECRET || '';
+  if (SPONGE_SECRET && serviceKey) return serviceKey === SPONGE_SECRET;
+  return verified === 'true' || verified === '1';
+}
+
+// ─── Direct x402 Payment Verification ────────────────────────────────────────
 async function verifyPayment(xPayment, amount, resource) {
   if (!xPayment) return { valid: false, reason: 'missing_header' };
   try {
@@ -30,17 +43,22 @@ async function verifyPayment(xPayment, amount, resource) {
     );
     return { valid: response.data?.valid === true || response.status === 200 };
   } catch (err) {
-    // Facilitator unavailable — fallback: accept any non-empty header (alpha mode)
-    console.warn('[x402 Verify] Facilitator error, running in alpha mode:', err.message);
-    return { valid: true, fallback: true };   // ← THIS IS THE BREACH
+    console.warn('[x402 Verify] Facilitator error:', err.message);
+    return { valid: false, reason: 'facilitator_unavailable' }; // breach closed
   }
 }
 
+// ─── Payment Middleware ───────────────────────────────────────────────────────
 function requirePayment(price, description) {
   return async (req, res, next) => {
+    // 1. Check if Sponge already verified this request
+    if (verifySponge(req)) {
+      console.log(`[Sponge] Verified: ${req.path} ($${price})`);
+      return next();
+    }
+    // 2. Check for direct x402 payment header
     const xPayment = req.headers['x-payment'] || req.headers['X-Payment'];
     if (!xPayment) {
-      res.set('Content-Type', 'application/json');
       return res.status(402).json({
         error: 'Payment Required',
         x402Version: 2,
@@ -53,12 +71,15 @@ function requirePayment(price, description) {
         }],
         facilitator: FACILITATOR_URL,
         resource: `https://propx402.xyz${req.path}`,
+        paymentGateway: `https://api.paysponge.com/x402/purchase/${SPONGE_SERVICE_ID}${req.path}`,
       });
     }
+    // 3. Verify the direct x402 payment
     const result = await verifyPayment(xPayment, price, `https://propx402.xyz${req.path}`);
     if (!result.valid) {
       return res.status(402).json({
         error: 'Payment verification failed',
+        reason: result.reason || 'invalid_payment',
         x402Version: 2,
         accepts: [{
           scheme: 'exact',
@@ -69,6 +90,7 @@ function requirePayment(price, description) {
         }],
         facilitator: FACILITATOR_URL,
         resource: `https://propx402.xyz${req.path}`,
+        paymentGateway: `https://api.paysponge.com/x402/purchase/${SPONGE_SERVICE_ID}${req.path}`,
       });
     }
     next();
@@ -90,6 +112,7 @@ app.get('/health', (req, res) => {
     facilitator: FACILITATOR_URL,
     scheme: 'exact',
     token: 'USDC',
+    paymentGateway: `https://api.paysponge.com/x402/purchase/${SPONGE_SERVICE_ID}`,
     endpoints: {
       '/property-intel':     { price: '$0.05 USDC', method: 'POST', body: '{ address: string }',                     description: '14 data sources — property, flood, walkability, census, environment, hazards, broadband, jobs, disasters' },
       '/property-investor':  { price: '$0.15 USDC', method: 'POST', body: '{ address: string, condition?: string }', description: '5 strategy analyses: Fix & Flip, Co-Living, Sub-To, STR, BRRRR + derived metrics + hidden costs' },
@@ -118,6 +141,7 @@ app.get('/.well-known/x402', (req, res) => {
     network: NETWORK_CAIP2,
     scheme: 'exact',
     token: 'USDC',
+    paymentGateway: `https://api.paysponge.com/x402/purchase/${SPONGE_SERVICE_ID}`,
     endpoints: [
       { method: 'POST', path: '/property-intel',     price: '$0.05', description: '14-source property intelligence: AVM, flood, walkability, census, hazards, broadband, jobs, disasters' },
       { method: 'POST', path: '/property-investor',  price: '$0.15', description: '5 investor strategy engines: Fix & Flip, Co-Living, Sub-To, STR, BRRRR + hidden cost discovery' },
@@ -201,17 +225,16 @@ app.get('/openapi.json', (req, res) => {
       '/property-narrative': { post: { summary: 'Claude AI investment narrative — $0.10 USDC', security: [{ x402: [] }], requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'AI narrative' }, '402': { description: 'Payment required' } } } },
       '/property-full':      { post: { summary: 'Complete package: Intel + Investor + Narrative — $0.25 USDC', security: [{ x402: [] }], requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' }, condition: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Full report' }, '402': { description: 'Payment required' } } } },
       '/property-bulk':      { post: { summary: 'Bulk intel — $0.03 USDC/address', security: [{ x402: [] }], requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { addresses: { type: 'array', items: { type: 'string' }, maxItems: 20 } }, required: ['addresses'] } } } }, responses: { '200': { description: 'Bulk results' }, '402': { description: 'Payment required' } } } },
-      '/test/property-intel':      { post: { summary: 'Free test of /property-intel',      requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
-      '/test/property-investor':   { post: { summary: 'Free test of /property-investor',   requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' }, condition: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
-      '/test/property-narrative':  { post: { summary: 'Free test of /property-narrative',  requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
-      '/test/property-full':       { post: { summary: 'Free test of /property-full',       requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' }, condition: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
+      '/test/property-intel':     { post: { summary: 'Free test of /property-intel',     requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
+      '/test/property-investor':  { post: { summary: 'Free test of /property-investor',  requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' }, condition: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
+      '/test/property-narrative': { post: { summary: 'Free test of /property-narrative', requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
+      '/test/property-full':      { post: { summary: 'Free test of /property-full',      requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' }, condition: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
     },
-    components: { securitySchemes: { x402: { type: 'apiKey', in: 'header', name: 'X-PAYMENT', description: 'x402 payment header. Receive HTTP 402, pay USDC on Base mainnet, retry with payment proof.' } } }
+    components: { securitySchemes: { x402: { type: 'apiKey', in: 'header', name: 'X-PAYMENT', description: 'x402 payment header. Receive HTTP 402, pay USDC on Base mainnet via Sponge Gateway, retry with payment proof.' } } }
   });
 });
 
 // ─── FREE: Test endpoints ─────────────────────────────────────────────────────
-// GET fallback — explain usage
 app.get('/test/:endpoint', (req, res) => {
   res.status(405).json({
     error: 'Method Not Allowed',
