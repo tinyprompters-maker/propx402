@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>PropX402 â Real Estate Intelligence API for AI Agents</title>
+<title>PropX402 &mdash; Real Estate Intelligence API for AI Agents</title>
 <meta name="description" content="The property intelligence API built for AI real estate agents. Pay per query via x402 on Base. No keys. No subscriptions. Just USDC.">
 <meta name="keywords" content="real estate x402 API, property intelligence API, agentic real estate, PropX402, AI property data, x402 protocol real estate">
 <link rel="preconnect" href="https://fonts.googleapis.com">
@@ -31,7 +31,6 @@
     overflow-x: hidden;
   }
 
-  /* Grid overlay */
   body::before {
     content: '';
     position: fixed;
@@ -96,7 +95,6 @@
 
   .nav-cta:hover { opacity: 0.85; }
 
-  /* HERO */
   .hero {
     position: relative;
     z-index: 1;
@@ -190,7 +188,6 @@
 
   .btn-outline:hover { border-color: var(--green); color: var(--green); }
 
-  /* Terminal Demo */
   .terminal {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -241,7 +238,6 @@
   .t-dim { color: var(--muted); }
   .t-prompt { color: var(--green); margin-right: 8px; }
 
-  /* SECTION */
   .section {
     position: relative;
     z-index: 1;
@@ -273,10 +269,9 @@
     margin-bottom: 48px;
   }
 
-  /* PRICING */
   .pricing-grid {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
     gap: 1px;
     background: var(--border);
     border: 1px solid var(--border);
@@ -286,7 +281,7 @@
 
   .price-card {
     background: var(--surface);
-    padding: 32px;
+    padding: 28px;
     transition: background 0.2s;
   }
 
@@ -306,6 +301,24 @@
     letter-spacing: 0.1em;
     color: var(--green);
     border: 1px solid var(--green);
+    padding: 2px 8px;
+    border-radius: 2px;
+  }
+
+  .price-card.best-value {
+    background: #091520;
+    position: relative;
+  }
+
+  .price-card.best-value::after {
+    content: 'BEST VALUE';
+    position: absolute;
+    top: 16px;
+    right: 16px;
+    font-size: 0.65rem;
+    letter-spacing: 0.1em;
+    color: var(--orange);
+    border: 1px solid var(--orange);
     padding: 2px 8px;
     border-radius: 2px;
   }
@@ -332,12 +345,11 @@
   }
 
   .price-desc {
-    font-size: 0.8rem;
+    font-size: 0.78rem;
     color: var(--muted);
     line-height: 1.6;
   }
 
-  /* DATA SOURCES */
   .sources-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
@@ -376,7 +388,6 @@
   .badge-free { background: #052e16; color: #4ade80; border: 1px solid #166534; }
   .badge-paid { background: #1c0a00; color: #fb923c; border: 1px solid #9a3412; }
 
-  /* HOW IT WORKS */
   .steps {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
@@ -414,7 +425,6 @@
     line-height: 1.6;
   }
 
-  /* FOOTER */
   footer {
     position: relative;
     z-index: 1;
@@ -436,7 +446,6 @@
   .footer-links a { font-size: 0.75rem; color: var(--muted); text-decoration: none; }
   .footer-links a:hover { color: var(--green); }
 
-  /* Live demo section */
   .demo-section {
     background: var(--surface);
     border: 1px solid var(--border);
@@ -444,22 +453,6 @@
     padding: 32px;
     margin-top: 48px;
   }
-
-  .demo-input {
-    width: 100%;
-    background: var(--bg);
-    border: 1px solid var(--border);
-    color: var(--text);
-    padding: 12px 16px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 0.85rem;
-    border-radius: 4px;
-    outline: none;
-    margin-bottom: 12px;
-    transition: border-color 0.2s;
-  }
-
-  .demo-input:focus { border-color: var(--green); }
 
   .demo-btn {
     background: var(--green);
@@ -508,14 +501,13 @@
     <li><a href="#pricing">Pricing</a></li>
     <li><a href="#data">Data Sources</a></li>
     <li><a href="/health">API Status</a></li>
-    <li><a href="/docs.html">Docs</a></li>
   </ul>
-  <a href="/docs.html" class="nav-cta">View Docs â</a>
+  <a href="https://docs.propx402.xyz" class="nav-cta" target="_blank">View Docs &rarr;</a>
 </nav>
 
 <!-- HERO -->
 <section class="hero">
-  <div class="badge">LIVE ON BASE Â· x402 PROTOCOL Â· AI-NATIVE</div>
+  <div class="badge">&#x25CF; LIVE ON BASE &middot; x402 PROTOCOL &middot; AI-NATIVE</div>
 
   <h1>
     Property intel<br>
@@ -529,7 +521,7 @@
   </p>
 
   <div class="hero-actions">
-    <a href="#demo" class="btn-primary">â¶ Try Free Demo</a>
+    <a href="#demo" class="btn-primary">&#9654; Try Free Demo</a>
     <a href="/health" class="btn-outline">API Status</a>
     <a href="/.well-known/mcp" class="btn-outline">MCP Schema</a>
   </div>
@@ -543,19 +535,19 @@
       <span class="terminal-title">real-estate-agent.js</span>
     </div>
     <div class="terminal-body">
-<span class="t-comment">// AI agent queries PropX402 â pays via x402, gets full property intel</span>
-<span class="t-key">const</span> response = <span class="t-key">await</span> fetch(<span class="t-str">'https://propx402.com/property-intel'</span>, {
+<span class="t-comment">// AI agent queries PropX402 &mdash; pays via x402, gets full property intel</span>
+<span class="t-key">const</span> response = <span class="t-key">await</span> fetch(<span class="t-str">'https://propx402.xyz/property-intel'</span>, {
   method: <span class="t-str">'POST'</span>,
   body: JSON.stringify({ address: <span class="t-str">'1234 Oak St, Cedar Rapids, IA'</span> })
 });
-<span class="t-comment">// â HTTP 402: Payment Required ($0.05 USDC on Base)</span>
-<span class="t-comment">// â Agent auto-pays via x402 wallet</span>
-<span class="t-comment">// â HTTP 200: Property Intelligence Report</span>
+<span class="t-comment">// &rarr; HTTP 402: Payment Required ($0.05 USDC on Base)</span>
+<span class="t-comment">// &rarr; Agent auto-pays via x402 wallet</span>
+<span class="t-comment">// &rarr; HTTP 200: Property Intelligence Report</span>
 
 <span class="t-dim">{</span>
   <span class="t-key">"property"</span>: { <span class="t-key">"yearBuilt"</span>: <span class="t-num">1987</span>, <span class="t-key">"sqft"</span>: <span class="t-num">1840</span>, <span class="t-key">"beds"</span>: <span class="t-num">3</span>, <span class="t-key">"baths"</span>: <span class="t-num">2</span> },
-  <span class="t-key">"valueEstimate"</span>: { <span class="t-key">"value"</span>: <span class="t-num">$218500</span>, <span class="t-key">"low"</span>: <span class="t-num">$204000</span>, <span class="t-key">"high"</span>: <span class="t-num">$233000</span> },
-  <span class="t-key">"rentEstimate"</span>: { <span class="t-key">"monthly"</span>: <span class="t-num">$1650</span>, <span class="t-key">"capRate"</span>: <span class="t-str">"~9.1%"</span> },
+  <span class="t-key">"valueEstimate"</span>: { <span class="t-key">"value"</span>: <span class="t-num">218500</span>, <span class="t-key">"low"</span>: <span class="t-num">204000</span>, <span class="t-key">"high"</span>: <span class="t-num">233000</span> },
+  <span class="t-key">"rentEstimate"</span>: { <span class="t-key">"monthly"</span>: <span class="t-num">1650</span>, <span class="t-key">"capRate"</span>: <span class="t-str">"~9.1%"</span> },
   <span class="t-key">"floodRisk"</span>: { <span class="t-key">"zone"</span>: <span class="t-str">"X"</span>, <span class="t-key">"risk"</span>: <span class="t-str">"Minimal"</span> },
   <span class="t-key">"walkScore"</span>: <span class="t-num">72</span>, <span class="t-key">"schoolScore"</span>: <span class="t-num">8.1</span>,
   <span class="t-key">"neighborhood"</span>: { <span class="t-key">"medianIncome"</span>: <span class="t-str">"$61,200"</span>, <span class="t-key">"trajectory"</span>: <span class="t-str">"appreciating"</span> },
@@ -581,7 +573,7 @@
     </div>
     <div class="step">
       <div class="step-num">02</div>
-      <div class="step-title">HTTP 402 â Pay</div>
+      <div class="step-title">HTTP 402 &rarr; Pay</div>
       <div class="step-desc">PropX402 returns 402 Payment Required with USDC amount and Base network address. Agent auto-pays $0.05 USDC via x402 wallet.</div>
     </div>
     <div class="step">
@@ -591,8 +583,8 @@
     </div>
     <div class="step">
       <div class="step-num">04</div>
-      <div class="step-title">Upgrade: Narrative</div>
-      <div class="step-desc">Pay $0.10 USDC for /property-narrative â Claude Sonnet 4.6 writes a full investment analysis, risk assessment, and agent recommendation.</div>
+      <div class="step-title">Upgrade: Full Report</div>
+      <div class="step-desc">Pay $0.25 USDC for /property-full &mdash; Intel + 5 investor strategy analyses + Claude Sonnet AI narrative in one call.</div>
     </div>
   </div>
 </section>
@@ -609,20 +601,32 @@
     <div class="price-card featured">
       <div class="price-endpoint">POST /property-intel</div>
       <div class="price-amount">$0.05</div>
-      <div class="price-unit">USDC per query Â· Base network</div>
-      <div class="price-desc">Full property intelligence report. AVM, owner data, flood risk, walkability, school scores, census demographics, environmental data, risk score.</div>
+      <div class="price-unit">USDC per query &middot; Base network</div>
+      <div class="price-desc">14-source property intelligence. AVM, owner data, flood risk, walkability, school scores, census demographics, environmental data, risk score.</div>
+    </div>
+    <div class="price-card">
+      <div class="price-endpoint">POST /property-investor</div>
+      <div class="price-amount">$0.15</div>
+      <div class="price-unit">USDC per query &middot; Base network</div>
+      <div class="price-desc">5 investor strategy engines: Fix &amp; Flip, Co-Living, Subject-To, STR, BRRRR &mdash; each with cash flow projections, hidden cost discovery, regulatory intel.</div>
     </div>
     <div class="price-card">
       <div class="price-endpoint">POST /property-narrative</div>
       <div class="price-amount">$0.10</div>
-      <div class="price-unit">USDC per query Â· Base network</div>
-      <div class="price-desc">Claude Sonnet 4.6 investment analysis. Full property narrative, market position, cap rate outlook, risk assessment, agent recommendation.</div>
+      <div class="price-unit">USDC per query &middot; Base network</div>
+      <div class="price-desc">Claude Sonnet AI investment analysis. Full property narrative, market position, cap rate outlook, risk assessment, agent recommendation.</div>
+    </div>
+    <div class="price-card best-value">
+      <div class="price-endpoint">POST /property-full</div>
+      <div class="price-amount">$0.25</div>
+      <div class="price-unit">USDC per query &middot; Base network</div>
+      <div class="price-desc">Everything in one call &mdash; Intel + Investor Analysis + AI Narrative. Save $0.05 vs buying separately. The complete due diligence package.</div>
     </div>
     <div class="price-card">
       <div class="price-endpoint">POST /property-bulk</div>
       <div class="price-amount">$0.03</div>
-      <div class="price-unit">USDC per address Â· up to 20</div>
-      <div class="price-desc">Bulk property intelligence for portfolio analysis. Up to 20 addresses per call. Same data, parallel processing, lower per-unit cost.</div>
+      <div class="price-unit">USDC per address &middot; up to 20</div>
+      <div class="price-desc">Bulk property intelligence for portfolio screening. Up to 20 addresses per call. Same data, parallel processing, lower per-unit cost.</div>
     </div>
   </div>
 </section>
@@ -633,7 +637,7 @@
 <section class="section" id="data">
   <div class="section-label">// DATA SOURCES</div>
   <h2 class="section-title">Best-in-class data.<br>Aggregated for agents.</h2>
-  <p class="section-sub">PropX402 aggregates from 6+ authoritative sources in parallel and returns a single normalized JSON payload in under 3 seconds.</p>
+  <p class="section-sub">PropX402 aggregates from 14 authoritative sources in parallel and returns a single normalized JSON payload in under 3 seconds.</p>
 
   <div class="sources-grid">
     <div class="source-card">
@@ -662,6 +666,16 @@
       <span class="source-badge badge-free">100% Free</span>
     </div>
     <div class="source-card">
+      <div class="source-name">NOAA / USGS</div>
+      <div class="source-what">Natural hazard data. Earthquake risk, wildfire history, severe weather events.</div>
+      <span class="source-badge badge-free">100% Free</span>
+    </div>
+    <div class="source-card">
+      <div class="source-name">FCC Broadband</div>
+      <div class="source-what">Internet availability and speeds by address. Critical for remote work appeal.</div>
+      <span class="source-badge badge-free">100% Free</span>
+    </div>
+    <div class="source-card">
       <div class="source-name">OpenStreetMap</div>
       <div class="source-what">Geocoding and address normalization. Zero cost, global coverage.</div>
       <span class="source-badge badge-free">100% Free</span>
@@ -675,17 +689,17 @@
 <section class="section" id="demo">
   <div class="section-label">// LIVE DEMO</div>
   <h2 class="section-title">Try the free<br>health endpoint.</h2>
-  <p class="section-sub">Test the API discovery endpoint for free. Production property intel queries require $0.05 USDC via x402.</p>
+  <p class="section-sub">Test the API discovery endpoint for free. Production property intel queries require USDC via x402.</p>
 
   <div class="demo-section">
-    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">GET /health â Free API discovery (no payment required)</div>
-    <button class="demo-btn" id="demoBtn" onclick="testApi()">â¶ Run Health Check</button>
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">GET /health &mdash; Free API discovery (no payment required)</div>
+    <button class="demo-btn" id="demoBtn" onclick="testApi()">&#9654; Run Health Check</button>
     <div class="demo-output" id="output"></div>
   </div>
 
   <div class="demo-section" style="margin-top:24px;">
-    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">GET /.well-known/mcp â MCP Tool Schema (for LLM agent discovery)</div>
-    <button class="demo-btn" onclick="testMcp()">â¶ Load MCP Schema</button>
+    <div style="font-size:0.8rem;color:var(--muted);margin-bottom:16px;">GET /.well-known/mcp &mdash; MCP Tool Schema (for LLM agent discovery)</div>
+    <button class="demo-btn" onclick="testMcp()">&#9654; Load MCP Schema</button>
     <div class="demo-output" id="mcpOutput"></div>
   </div>
 </section>
@@ -694,12 +708,12 @@
 
 <footer>
   <div class="logo">Prop<span>X402</span></div>
-  <p>Real estate intelligence for the agentic web Â· x402 protocol Â· Base network</p>
+  <p>Real estate intelligence for the agentic web &middot; x402 protocol &middot; Base network</p>
   <div class="footer-links">
-    <a href="/docs.html">Documentation</a>
+    <a href="https://docs.propx402.xyz" target="_blank">Documentation</a>
     <a href="/health">API Health</a>
     <a href="/.well-known/mcp">MCP Schema</a>
-    <a href="https://docs.cdp.coinbase.com/x402">x402 Docs</a>
+    <a href="https://docs.x402.org" target="_blank">x402 Docs</a>
   </div>
 </footer>
 
@@ -708,12 +722,12 @@ async function testApi() {
   const btn = document.getElementById('demoBtn');
   const output = document.getElementById('output');
   btn.disabled = true;
-  btn.textContent = 'â³ Loading...';
+  btn.textContent = 'Loading...';
   output.style.display = 'block';
   output.textContent = 'Fetching /health...';
 
   try {
-    const res = await fetch('/health');
+    const res = await fetch('https://propx402.xyz/health');
     const data = await res.json();
     output.textContent = JSON.stringify(data, null, 2);
   } catch(e) {
@@ -721,7 +735,7 @@ async function testApi() {
   }
 
   btn.disabled = false;
-  btn.textContent = 'â¶ Run Health Check';
+  btn.textContent = '&#9654; Run Health Check';
 }
 
 async function testMcp() {
@@ -730,7 +744,7 @@ async function testMcp() {
   output.textContent = 'Fetching /.well-known/mcp...';
 
   try {
-    const res = await fetch('/.well-known/mcp');
+    const res = await fetch('https://propx402.xyz/.well-known/mcp');
     const data = await res.json();
     output.textContent = JSON.stringify(data, null, 2);
   } catch(e) {
