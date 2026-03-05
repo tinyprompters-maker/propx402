@@ -19,39 +19,33 @@ const WALLET_ADDRESS = process.env.WALLET_ADDRESS || '0xCFA4F055621356974dFA4846
 const FACILITATOR_URL = 'https://x402.org/facilitator';
 const NETWORK_CAIP2 = 'eip155:8453'; // Base mainnet CAIP-2
 
-// FIX #1: x402 V2 — synchronous 402 gate (serverless-safe, fires on every cold start immediately)
-// Returns proper V2 'accepts' array format required by PaySponge, AgentWallet, and Bazaar catalogs
-const PAID_ROUTES = {
-  '/property-intel':     { price: '0.05', description: 'PropX402 — 14-source property intelligence report' },
-  '/property-investor':  { price: '0.15', description: 'PropX402 — 5 investor strategy analyses + hidden costs' },
-  '/property-narrative': { price: '0.10', description: 'PropX402 — Claude Sonnet AI investment narrative' },
-  '/property-full':      { price: '0.25', description: 'PropX402 — Full package: Intel + Investor + Narrative' },
-  '/property-bulk':      { price: '0.03', description: 'PropX402 — Bulk property intel, up to 20 addresses' },
-};
-
-app.use(Object.keys(PAID_ROUTES), (req, res, next) => {
-  const xPayment = req.headers['x-payment'] || req.headers['X-Payment'];
-  if (!xPayment) {
-    const route = PAID_ROUTES[req.path];
-    return res.status(402).json({
-      error: 'Payment Required',
-      x402Version: 2,
-      accepts: [{
-        scheme: 'exact',
-        price: `$${route.price}`,
-        network: NETWORK_CAIP2,
-        payTo: WALLET_ADDRESS,
-        extra: { description: route.description, mimeType: 'application/json' },
-      }],
-      facilitator: FACILITATOR_URL,
-      resource: `https://propx402.xyz${req.path}`,
-    });
-  }
-  next();
-});
+// FIX #1: x402 V2 payment gate — inline per-route, serverless-safe
+// Returns proper V2 'accepts' array format required by PaySponge/AgentWallet/Bazaar catalogs
+function requirePayment(price, description) {
+  return (req, res, next) => {
+    const xPayment = req.headers['x-payment'] || req.headers['X-Payment'];
+    if (!xPayment) {
+      res.set('Content-Type', 'application/json');
+      return res.status(402).json({
+        error: 'Payment Required',
+        x402Version: 2,
+        accepts: [{
+          scheme: 'exact',
+          price: `$${price}`,
+          network: NETWORK_CAIP2,
+          payTo: WALLET_ADDRESS,
+          extra: { description, mimeType: 'application/json' },
+        }],
+        facilitator: FACILITATOR_URL,
+        resource: `https://propx402.xyz${req.path}`,
+      });
+    }
+    next();
+  };
+}
 
 // ─── FREE: Health Check ────────────────────────────────────────────────────────
-// FIX #5: Add wallet, facilitator, networkCAIP2 — required by catalog scrapers
+// FIX #5: Added wallet, facilitator, networkCAIP2 — required by catalog scrapers
 app.get('/health', (req, res) => {
   res.json({
     status: 'online',
@@ -80,7 +74,7 @@ app.get('/health', (req, res) => {
 });
 
 // ─── FREE: x402 V2 Bazaar Discovery ──────────────────────────────────────────
-// FIX #6: New endpoint — required for x402.org/ecosystem auto-indexing and PaySponge catalog
+// FIX #6: New endpoint — required for x402.org/ecosystem auto-indexing and PaySponge
 app.get('/.well-known/x402', (req, res) => {
   res.json({
     version: '2.0',
@@ -101,13 +95,13 @@ app.get('/.well-known/x402', (req, res) => {
       { method: 'POST', path: '/property-bulk',      price: '$0.03', description: 'Bulk intel for up to 20 addresses per call' },
     ],
     freeEndpoints: [
-      { method: 'GET',  path: '/health',              description: 'API status and endpoint directory' },
-      { method: 'GET',  path: '/.well-known/x402',    description: 'x402 discovery schema' },
-      { method: 'GET',  path: '/.well-known/mcp',     description: 'MCP tool schema' },
-      { method: 'GET',  path: '/openapi.json',        description: 'OpenAPI 3.0 spec' },
-      { method: 'POST', path: '/test/property-intel', description: 'Free test — real data, no payment' },
+      { method: 'GET',  path: '/health',                 description: 'API status and endpoint directory' },
+      { method: 'GET',  path: '/.well-known/x402',       description: 'x402 discovery schema' },
+      { method: 'GET',  path: '/.well-known/mcp',        description: 'MCP tool schema' },
+      { method: 'GET',  path: '/openapi.json',           description: 'OpenAPI 3.0 spec' },
+      { method: 'POST', path: '/test/property-intel',    description: 'Free test — real data, no payment' },
       { method: 'POST', path: '/test/property-investor', description: 'Free test — real data, no payment' },
-      { method: 'POST', path: '/test/property-full',  description: 'Free test — real data, no payment' },
+      { method: 'POST', path: '/test/property-full',     description: 'Free test — real data, no payment' },
     ],
     links: {
       docs:    'https://propx402.xyz/docs.html',
@@ -120,8 +114,7 @@ app.get('/.well-known/x402', (req, res) => {
   });
 });
 
-// ─── FREE: MCP Discovery ──────────────────────────────────────────────────────
-// FIX: Added outputSchema to all tools — required for Claude Desktop agent reasoning/chaining
+// ─── FREE: MCP Discovery — outputSchema added for Claude Desktop agent reasoning
 app.get('/.well-known/mcp', (req, res) => {
   res.json({
     schema_version: '1.0',
@@ -132,7 +125,7 @@ app.get('/.well-known/mcp', (req, res) => {
         name: 'get_property_intel',
         description: 'Get comprehensive property data including flood risk, walkability, demographics, hazards, broadband, job market',
         inputSchema: { type: 'object', properties: { address: { type: 'string', description: 'Full US property address e.g. "1411 8th Ave SE, Cedar Rapids, IA 52403"' } }, required: ['address'] },
-        outputSchema: { type: 'object', properties: { location: { type: 'object' }, property: { type: 'object' }, floodRisk: { type: 'object' }, walkability: { type: 'object' }, neighborhood: { type: 'object' }, naturalHazards: { type: 'object' }, riskScore: { type: 'number' }, riskLabel: { type: 'string', enum: ['Low', 'Moderate', 'High'] } } },
+        outputSchema: { type: 'object', properties: { location: { type: 'object' }, property: { type: 'object' }, floodRisk: { type: 'object' }, walkability: { type: 'object' }, neighborhood: { type: 'object' }, riskScore: { type: 'number' }, riskLabel: { type: 'string', enum: ['Low', 'Moderate', 'High'] } } },
         x402: { price: '$0.05', network: NETWORK_CAIP2, payTo: WALLET_ADDRESS },
       },
       {
@@ -162,12 +155,7 @@ app.get('/.well-known/mcp', (req, res) => {
 app.get('/openapi.json', (req, res) => {
   res.json({
     openapi: '3.0.3',
-    info: {
-      title: 'PropX402',
-      version: '2.1.0',
-      description: 'Real estate property intelligence API for AI agents. Pay per query via x402 on Base mainnet. No API keys, no subscriptions.',
-      contact: { email: 'tinyprompters@gmail.com', url: 'https://propx402.xyz' },
-    },
+    info: { title: 'PropX402', version: '2.1.0', description: 'Real estate property intelligence API for AI agents. Pay per query via x402 on Base mainnet. No API keys.', contact: { email: 'tinyprompters@gmail.com', url: 'https://propx402.xyz' } },
     servers: [{ url: 'https://propx402.xyz', description: 'Production — Base mainnet x402' }],
     paths: {
       '/property-intel':     { post: { summary: '14-source property intelligence — $0.05 USDC', security: [{ x402: [] }], requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string', example: '1411 8th Ave SE, Cedar Rapids, IA 52403' } }, required: ['address'] } } } }, responses: { '200': { description: 'Property intelligence report' }, '402': { description: 'Payment required' } } } },
@@ -179,24 +167,18 @@ app.get('/openapi.json', (req, res) => {
       '/test/property-investor': { post: { summary: 'Free test of /property-investor', requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' }, condition: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
       '/test/property-full':     { post: { summary: 'Free test of /property-full', requestBody: { required: true, content: { 'application/json': { schema: { type: 'object', properties: { address: { type: 'string' }, condition: { type: 'string' } }, required: ['address'] } } } }, responses: { '200': { description: 'Test result' } } } },
     },
-    components: {
-      securitySchemes: {
-        x402: { type: 'apiKey', in: 'header', name: 'X-PAYMENT', description: 'x402 payment header. Receive HTTP 402, pay with USDC on Base mainnet, retry.' }
-      }
-    }
+    components: { securitySchemes: { x402: { type: 'apiKey', in: 'header', name: 'X-PAYMENT', description: 'x402 payment header. Receive HTTP 402, pay USDC on Base mainnet, retry.' } } }
   });
 });
 
-// ─── FREE: Test endpoints (no payment) ───────────────────────────────────────
+// ─── FREE: Test endpoints ─────────────────────────────────────────────────────
 app.post('/test/property-intel', async (req, res) => {
   const { address } = req.body;
   if (!address) return res.status(400).json({ error: 'address is required' });
   try {
     const intel = await getPropertyIntel(address);
     res.json({ success: true, source: 'PropX402', mode: 'TEST', timestamp: new Date().toISOString(), query: address, data: intel });
-  } catch (err) {
-    res.status(500).json({ error: 'Intel fetch failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Intel fetch failed', detail: err.message }); }
 });
 
 app.post('/test/property-investor', async (req, res) => {
@@ -204,12 +186,9 @@ app.post('/test/property-investor', async (req, res) => {
   if (!address) return res.status(400).json({ error: 'address is required' });
   try {
     const intel = await getPropertyIntel(address);
-    const stateCode = intel.location?.stateCode || 'IA';
-    const investor = runInvestorAnalysis(intel, stateCode, condition);
+    const investor = runInvestorAnalysis(intel, intel.location?.stateCode || 'IA', condition);
     res.json({ success: true, source: 'PropX402', mode: 'TEST', timestamp: new Date().toISOString(), query: address, data: { location: intel.location, property: intel.property, investorAnalysis: investor } });
-  } catch (err) {
-    res.status(500).json({ error: 'Investor analysis failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Investor analysis failed', detail: err.message }); }
 });
 
 app.post('/test/property-full', async (req, res) => {
@@ -217,82 +196,65 @@ app.post('/test/property-full', async (req, res) => {
   if (!address) return res.status(400).json({ error: 'address is required' });
   try {
     const intel = await getPropertyIntel(address);
-    const stateCode = intel.location?.stateCode || 'IA';
-    const investor = runInvestorAnalysis(intel, stateCode, condition);
+    const investor = runInvestorAnalysis(intel, intel.location?.stateCode || 'IA', condition);
     res.json({ success: true, source: 'PropX402', mode: 'TEST', timestamp: new Date().toISOString(), query: address, data: { ...intel, investorAnalysis: investor } });
-  } catch (err) {
-    res.status(500).json({ error: 'Full report failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Full report failed', detail: err.message }); }
 });
 
 // ─── PAID: Property Intelligence ─────────────────────────────────────────────
-app.post('/property-intel', async (req, res) => {
+app.post('/property-intel', requirePayment('0.05', 'PropX402 — 14-source property intelligence'), async (req, res) => {
   const { address } = req.body;
   if (!address) return res.status(400).json({ error: 'address is required' });
   try {
     const intel = await getPropertyIntel(address);
     res.json({ success: true, source: 'PropX402', protocol: 'x402', network: 'base-mainnet', timestamp: new Date().toISOString(), query: address, data: intel });
-  } catch (err) {
-    res.status(500).json({ error: 'Intel fetch failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Intel fetch failed', detail: err.message }); }
 });
 
 // ─── PAID: Investor Strategy Analysis ────────────────────────────────────────
-app.post('/property-investor', async (req, res) => {
+app.post('/property-investor', requirePayment('0.15', 'PropX402 — 5 investor strategy analyses'), async (req, res) => {
   const { address, condition = 'average' } = req.body;
   if (!address) return res.status(400).json({ error: 'address is required' });
   try {
     const intel = await getPropertyIntel(address);
-    const stateCode = intel.location?.stateCode || 'IA';
-    const investor = runInvestorAnalysis(intel, stateCode, condition);
+    const investor = runInvestorAnalysis(intel, intel.location?.stateCode || 'IA', condition);
     res.json({ success: true, source: 'PropX402', protocol: 'x402', network: 'base-mainnet', timestamp: new Date().toISOString(), query: address, data: { location: intel.location, property: intel.property, neighborhood: intel.neighborhood, marketTrends: intel.marketTrends, investorAnalysis: investor } });
-  } catch (err) {
-    res.status(500).json({ error: 'Investor analysis failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Investor analysis failed', detail: err.message }); }
 });
 
 // ─── PAID: AI Narrative ───────────────────────────────────────────────────────
-app.post('/property-narrative', async (req, res) => {
+app.post('/property-narrative', requirePayment('0.10', 'PropX402 — Claude Sonnet AI investment narrative'), async (req, res) => {
   const { address } = req.body;
   if (!address) return res.status(400).json({ error: 'address is required' });
   try {
     const intel = await getPropertyIntel(address);
-    const stateCode = intel.location?.stateCode || 'IA';
-    const investor = runInvestorAnalysis(intel, stateCode, 'average');
-    // FIX #3: pass single merged object — narrative.js signature now expects fullData
+    const investor = runInvestorAnalysis(intel, intel.location?.stateCode || 'IA', 'average');
     const narrative = await generateNarrative({ ...intel, investorAnalysis: investor });
     res.json({ success: true, source: 'PropX402', protocol: 'x402', network: 'base-mainnet', timestamp: new Date().toISOString(), query: address, data: { location: intel.location, property: intel.property, narrative } });
-  } catch (err) {
-    res.status(500).json({ error: 'Narrative generation failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Narrative generation failed', detail: err.message }); }
 });
 
-// ─── PAID: Full Report (Intel + Investor + Narrative) ────────────────────────
-app.post('/property-full', async (req, res) => {
+// ─── PAID: Full Report ────────────────────────────────────────────────────────
+app.post('/property-full', requirePayment('0.25', 'PropX402 — Full package: Intel + Investor + Narrative'), async (req, res) => {
   const { address, condition = 'average' } = req.body;
   if (!address) return res.status(400).json({ error: 'address is required' });
   try {
     const intel = await getPropertyIntel(address);
-    const stateCode = intel.location?.stateCode || 'IA';
-    const investor = runInvestorAnalysis(intel, stateCode, condition);
+    const investor = runInvestorAnalysis(intel, intel.location?.stateCode || 'IA', condition);
     const narrative = await generateNarrative({ ...intel, investorAnalysis: investor });
     res.json({ success: true, source: 'PropX402', protocol: 'x402', network: 'base-mainnet', timestamp: new Date().toISOString(), query: address, data: { ...intel, investorAnalysis: investor, narrative } });
-  } catch (err) {
-    res.status(500).json({ error: 'Full report failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Full report failed', detail: err.message }); }
 });
 
 // ─── PAID: Bulk ───────────────────────────────────────────────────────────────
-app.post('/property-bulk', async (req, res) => {
+app.post('/property-bulk', requirePayment('0.03', 'PropX402 — Bulk property intel'), async (req, res) => {
   const { addresses } = req.body;
   if (!addresses || !Array.isArray(addresses)) return res.status(400).json({ error: 'addresses array required' });
   if (addresses.length > 20) return res.status(400).json({ error: 'Max 20 addresses per bulk request' });
   try {
     const results = await Promise.allSettled(addresses.map(a => getPropertyIntel(a)));
     res.json({ success: true, source: 'PropX402', protocol: 'x402', timestamp: new Date().toISOString(), count: addresses.length, results: results.map((r, i) => ({ address: addresses[i], status: r.status, data: r.value || null, error: r.reason?.message || null })) });
-  } catch (err) {
-    res.status(500).json({ error: 'Bulk request failed', detail: err.message });
-  }
+  } catch (err) { res.status(500).json({ error: 'Bulk request failed', detail: err.message }); }
 });
 
 module.exports = app;
