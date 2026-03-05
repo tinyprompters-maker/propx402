@@ -20,8 +20,6 @@ const FACILITATOR_URL = 'https://x402.org/facilitator';
 const NETWORK_CAIP2 = 'eip155:8453';
 const VERSION = '2.1.0';
 
-// ─── x402 Payment Gate ────────────────────────────────────────────────────────
-// Checks X-Payment header, then verifies with x402 facilitator
 async function verifyPayment(xPayment, amount, resource) {
   if (!xPayment) return { valid: false, reason: 'missing_header' };
   try {
@@ -34,7 +32,7 @@ async function verifyPayment(xPayment, amount, resource) {
   } catch (err) {
     // Facilitator unavailable — fallback: accept any non-empty header (alpha mode)
     console.warn('[x402 Verify] Facilitator error, running in alpha mode:', err.message);
-    return { valid: true, fallback: true };
+    return { valid: true, fallback: true };   // ← THIS IS THE BREACH
   }
 }
 
