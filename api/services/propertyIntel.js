@@ -1,26 +1,37 @@
 const axios = require('axios');
 
 const RENTCAST_KEY = process.env.RENTCAST_API_KEY || '';
-const CENSUS_KEY = process.env.CENSUS_API_KEY || '';
-const FRED_KEY = process.env.FRED_API_KEY || '';
+const CENSUS_KEY   = process.env.CENSUS_API_KEY   || '';
+const FRED_KEY     = process.env.FRED_API_KEY     || '';
+const HUD_TOKEN    = process.env.HUD_API_KEY      || '';
 
-// âââ Geocode via OpenStreetMap (FREE, no key) âââââââââââââââââââââââââââââ
+// BLS requires numeric 2-digit state FIPS — map from 2-letter abbreviation
+const STATE_FIPS = {
+  AL:'01',AK:'02',AZ:'04',AR:'05',CA:'06',CO:'08',CT:'09',DE:'10',FL:'12',GA:'13',
+  HI:'15',ID:'16',IL:'17',IN:'18',IA:'19',KS:'20',KY:'21',LA:'22',ME:'23',MD:'24',
+  MA:'25',MI:'26',MN:'27',MS:'28',MO:'29',MT:'30',NE:'31',NV:'32',NH:'33',NJ:'34',
+  NM:'35',NY:'36',NC:'37',ND:'38',OH:'39',OK:'40',OR:'41',PA:'42',RI:'44',SC:'45',
+  SD:'46',TN:'47',TX:'48',UT:'49',VT:'50',VA:'51',WA:'53',WV:'54',WI:'55',WY:'56',
+  DC:'11',PR:'72',
+};
+
+// ─── Geocode via OpenStreetMap (FREE, no key) ─────────────────────────────────
 async function geocodeAddress(address) {
   try {
     const { data } = await axios.get(
       `https://nominatim.openstreetmap.org/search?q=${encodeURIComponent(address)}&format=json&limit=1&addressdetails=1`,
-      { headers: { 'User-Agent': 'PropX402/1.0 (prop-intel-api)' }, timeout: 6000 }
+      { headers: { 'User-Agent': 'PropX402/2.2 (prop-intel-api)' }, timeout: 6000 }
     );
     if (!data?.length) return null;
     const r = data[0];
     return {
       lat: parseFloat(r.lat), lon: parseFloat(r.lon),
       displayName: r.display_name,
-      city: r.address?.city || r.address?.town || r.address?.village || '',
-      state: r.address?.state || '',
+      city:      r.address?.city || r.address?.town || r.address?.village || '',
+      state:     r.address?.state || '',
       stateCode: r.address?.['ISO3166-2-lvl4']?.split('-')[1] || '',
-      zip: r.address?.postcode || '',
-      county: r.address?.county || ''
+      zip:       r.address?.postcode || '',
+      county:    r.address?.county || '',
     };
   } catch (err) {
     console.warn('[Geocode]', err.message);
@@ -28,7 +39,7 @@ async function geocodeAddress(address) {
   }
 }
 
-// âââ RentCast: Property + AVM + Rent âââââââââââââââââââââââââââââââââââââ
+// ─── RentCast: Property + AVM + Rent ─────────────────────────────────────────
 async function getRentCastData(address) {
   if (!RENTCAST_KEY) return { note: 'Set RENTCAST_API_KEY for property & AVM data' };
   try {
@@ -61,7 +72,7 @@ async function getRentCastData(address) {
       valueEstimate: valueEstimate ? {
         valueLow: valueEstimate.priceRangeLow, valueHigh: valueEstimate.priceRangeHigh,
         valueEstimate: valueEstimate.price
-      } : null
+      } : null,
     };
   } catch (err) {
     console.warn('[RentCast]', err.message);
@@ -69,25 +80,36 @@ async function getRentCastData(address) {
   }
 }
 
-// âââ FEMA Flood Zone (FREE, no key) ââââââââââââââââââââââââââââââââââââââ
+// ─── FEMA Flood Zone (FREE, no key) — FIXED endpoint ─────────────────────────
 async function getFloodZone(lat, lon) {
   try {
     const { data } = await axios.get(
-      `https://msc.fema.gov/arcgis/rest/services/NFHL/MapService/query?geometry=${lon},${lat}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE,ZONE_SUBTY,DFIRM_ID&returnGeometry=false&f=json`,
-      { timeout: 6000 }
+      `https://hazards.fema.gov/arcgis/rest/services/public/NFHL/MapServer/28/query?geometry=${lon},${lat}&geometryType=esriGeometryPoint&spatialRel=esriSpatialRelIntersects&outFields=FLD_ZONE,ZONE_SUBTY,DFIRM_ID&returnGeometry=false&f=json`,
+      { timeout: 8000 }
     );
     const f = data?.features?.[0]?.attributes;
-    if (!f) return { zone: 'Unknown', riskLevel: 'Unknown', inFloodZone: false };
+    if (!f) return { zone: 'X', riskLevel: 'Minimal Risk', inFloodZone: false, note: 'No flood zone data — likely minimal risk' };
     const zone = f.FLD_ZONE || 'Unknown';
-    const riskMap = { 'A': 'High Risk', 'AE': 'High Risk', 'AH': 'High Risk â Shallow', 'AO': 'High Risk â Sheet Flow', 'X': 'Minimal Risk', 'D': 'Undetermined', 'V': 'Very High â Coastal' };
-    return { zone, subtype: f.ZONE_SUBTY || null, riskLevel: riskMap[zone] || `Zone ${zone}`, firmedId: f.DFIRM_ID || null, inFloodZone: !['X', 'D'].includes(zone) };
+    const riskMap = {
+      'A': 'High Risk', 'AE': 'High Risk', 'AH': 'High Risk — Shallow Flooding',
+      'AO': 'High Risk — Sheet Flow', 'V': 'Very High Risk — Coastal',
+      'VE': 'Very High Risk — Coastal', 'X': 'Minimal Risk', 'D': 'Undetermined',
+    };
+    return {
+      zone,
+      subtype:    f.ZONE_SUBTY || null,
+      riskLevel:  riskMap[zone] || `Zone ${zone}`,
+      firmedId:   f.DFIRM_ID || null,
+      inFloodZone: !['X', 'D'].includes(zone),
+      source: 'FEMA NFHL',
+    };
   } catch (err) {
-    console.warn('[FEMA]', err.message);
-    return { zone: 'Unavailable', inFloodZone: false };
+    console.warn('[FEMA Flood]', err.message);
+    return { zone: 'Unknown', riskLevel: 'Unknown', inFloodZone: false };
   }
 }
 
-// âââ OSM Overpass: Real Walkability (FREE, no key) ââââââââââââââââââââââââ
+// ─── OSM Overpass: Walkability (FREE, no key) ─────────────────────────────────
 async function getOSMWalkability(lat, lon) {
   try {
     const radius = 800;
@@ -95,7 +117,11 @@ async function getOSMWalkability(lat, lon) {
     const { data } = await axios.post('https://overpass-api.de/api/interpreter', query, { headers: { 'Content-Type': 'text/plain' }, timeout: 14000 });
     const total = parseInt(data?.elements?.[0]?.tags?.total) || 0;
     const walkScore = Math.min(100, Math.round((total / 40) * 100));
-    const walkLabel = walkScore >= 90 ? "Walker's Paradise" : walkScore >= 70 ? 'Very Walkable' : walkScore >= 50 ? 'Somewhat Walkable' : walkScore >= 25 ? 'Car-Dependent' : 'Minimal Walkability';
+    const walkLabel =
+      walkScore >= 90 ? "Walker's Paradise" :
+      walkScore >= 70 ? 'Very Walkable' :
+      walkScore >= 50 ? 'Somewhat Walkable' :
+      walkScore >= 25 ? 'Car-Dependent' : 'Minimal Walkability';
     return { source: 'OpenStreetMap Overpass', radiusMeters: radius, totalAmenitiesNearby: total, walkScore, walkLabel };
   } catch (err) {
     console.warn('[OSM Walk]', err.message);
@@ -103,7 +129,7 @@ async function getOSMWalkability(lat, lon) {
   }
 }
 
-// âââ Census ACS Demographics (FREE, no key needed) âââââââââââââââââââââââ
+// ─── Census ACS Demographics (FREE, no key needed) ───────────────────────────
 async function getCensusData(lat, lon) {
   try {
     const geoRes = await axios.get(
@@ -123,18 +149,19 @@ async function getCensusData(lat, lon) {
     const d = {};
     headers.forEach((h, i) => { d[h] = parseInt(values[i]) || null; });
     const unemploymentRate = d.B23025_002E ? ((d.B23025_005E / d.B23025_002E) * 100).toFixed(1) : null;
-    const vacancyRate = d.B25002_001E ? ((d.B25002_003E / d.B25002_001E) * 100).toFixed(1) : null;
+    const vacancyRate      = d.B25002_001E ? ((d.B25002_003E / d.B25002_001E) * 100).toFixed(1) : null;
     return {
       censusTract: `${state}-${county}-${tractId}`,
-      population: d.B01003_001E, medianAge: d.B01002_001E,
-      medianHouseholdIncome: d.B19013_001E ? `$${d.B19013_001E.toLocaleString()}` : null,
+      population:  d.B01003_001E, medianAge: d.B01002_001E,
+      medianHouseholdIncome:    d.B19013_001E ? `$${d.B19013_001E.toLocaleString()}` : null,
       medianHouseholdIncomeRaw: d.B19013_001E,
-      medianHomeValue: d.B25077_001E ? `$${d.B25077_001E.toLocaleString()}` : null,
-      medianGrossRent: d.B25064_001E ? `$${d.B25064_001E.toLocaleString()}/mo` : null,
-      unemploymentRate: unemploymentRate ? `${unemploymentRate}%` : null,
-      vacancyRate: vacancyRate ? `${vacancyRate}%` : null,
-      withBachelors: d.B15003_022E, totalHousingUnits: d.B25002_001E,
-      _fips: { state, county, tract: tractId }
+      medianHomeValue:   d.B25077_001E ? `$${d.B25077_001E.toLocaleString()}` : null,
+      medianGrossRent:   d.B25064_001E ? `$${d.B25064_001E.toLocaleString()}/mo` : null,
+      unemploymentRate:  unemploymentRate ? `${unemploymentRate}%` : null,
+      vacancyRate:       vacancyRate ? `${vacancyRate}%` : null,
+      withBachelors:     d.B15003_022E,
+      totalHousingUnits: d.B25002_001E,
+      _fips: { state, county, tract: tractId },
     };
   } catch (err) {
     console.warn('[Census]', err.message);
@@ -142,30 +169,39 @@ async function getCensusData(lat, lon) {
   }
 }
 
-// âââ HUD: Fair Market Rent + Opportunity Zones (FREE, no key) ââââââââââââ
-async function getHUDData(zip, state, county) {
+// ─── HUD: Fair Market Rent + Opportunity Zones — FIXED with API key ──────────
+async function getHUDData(zip, stateFips, county) {
   const results = { opportunityZone: null, fairMarketRent: null };
+
+  // Fair Market Rent — use HUD API key if available
   try {
-    const fmrRes = await axios.get(`https://www.huduser.gov/hudapi/public/fmr/statedata/${state}`, { timeout: 6000 });
+    const headers = HUD_TOKEN ? { Authorization: `Bearer ${HUD_TOKEN}` } : {};
+    const fmrRes  = await axios.get(
+      `https://www.huduser.gov/hudapi/public/fmr/statedata/${stateFips}`,
+      { headers, timeout: 8000 }
+    );
     const fmrData = fmrRes.data?.data?.basicdata;
     if (Array.isArray(fmrData)) {
+      const countyClean = (county || '').toLowerCase().replace(' county', '').trim();
       const match = fmrData.find(d =>
-        d.countyname?.toLowerCase().includes((county || '').toLowerCase().replace(' county', '')) ||
-        d.fips2010?.startsWith(state + county)
+        d.countyname?.toLowerCase().includes(countyClean) ||
+        d.fips2010?.startsWith(stateFips + (county || ''))
       );
       if (match) {
         results.fairMarketRent = {
-          studio: match.Efficiency ? `$${match.Efficiency}` : null,
-          oneBed: match.One_Bedroom ? `$${match.One_Bedroom}` : null,
-          twoBed: match.Two_Bedroom ? `$${match.Two_Bedroom}` : null,
+          studio:   match.Efficiency    ? `$${match.Efficiency}`    : null,
+          oneBed:   match.One_Bedroom   ? `$${match.One_Bedroom}`   : null,
+          twoBed:   match.Two_Bedroom   ? `$${match.Two_Bedroom}`   : null,
           threeBed: match.Three_Bedroom ? `$${match.Three_Bedroom}` : null,
-          fourBed: match.Four_Bedroom ? `$${match.Four_Bedroom}` : null,
-          metro: match.areaname, year: match.year
+          fourBed:  match.Four_Bedroom  ? `$${match.Four_Bedroom}`  : null,
+          metro: match.areaname, year: match.year,
+          source: 'HUD Fair Market Rent',
         };
       }
     }
   } catch (err) { console.warn('[HUD FMR]', err.message); }
 
+  // Opportunity Zone check
   try {
     const ozRes = await axios.get(
       `https://services.arcgis.com/VTyQ9soqVukalItT/arcgis/rest/services/Opportunity_Zones/FeatureServer/0/query?where=ZCTA5CE10='${zip}'&outFields=ZCTA5CE10&returnGeometry=false&f=json`,
@@ -174,16 +210,19 @@ async function getHUDData(zip, state, county) {
     const isOZ = (ozRes.data?.features?.length || 0) > 0;
     results.opportunityZone = {
       isOpportunityZone: isOZ,
-      note: isOZ ? 'â Federal Opportunity Zone â significant tax advantages for investors' : 'Not a designated Opportunity Zone'
+      note: isOZ
+        ? '✅ Federal Opportunity Zone — significant tax advantages for investors'
+        : 'Not a designated Opportunity Zone',
     };
   } catch (err) {
     console.warn('[HUD OZ]', err.message);
     results.opportunityZone = { note: 'OZ data unavailable' };
   }
+
   return results;
 }
 
-// âââ FRED: State Housing Price Index (FREE key at fred.stlouisfed.org) ââââ
+// ─── FRED: State Housing Price Index (FREE key at fred.stlouisfed.org) ────────
 async function getFREDData(stateCode) {
   if (!FRED_KEY) return { note: 'Add free FRED_API_KEY at fred.stlouisfed.org for housing trends' };
   try {
@@ -194,14 +233,14 @@ async function getFREDData(stateCode) {
     );
     const obs = (data?.observations || []).filter(o => o.value !== '.');
     if (obs.length < 2) return { note: 'FRED data not available for this state' };
-    const latest = parseFloat(obs[0].value);
+    const latest  = parseFloat(obs[0].value);
     const yearAgo = parseFloat(obs[Math.min(4, obs.length - 1)].value);
     const appreciation = (((latest - yearAgo) / yearAgo) * 100).toFixed(2);
     return {
       statePriceIndex: latest.toFixed(1),
       yearOverYearAppreciation: `${appreciation}%`,
       trend: parseFloat(appreciation) > 0 ? 'Appreciating' : 'Depreciating',
-      lastUpdated: obs[0].date, source: 'Federal Reserve (FRED)'
+      lastUpdated: obs[0].date, source: 'Federal Reserve (FRED)',
     };
   } catch (err) {
     console.warn('[FRED]', err.message);
@@ -209,15 +248,19 @@ async function getFREDData(stateCode) {
   }
 }
 
-// âââ USGS Earthquake Hazard (FREE, no key) ââââââââââââââââââââââââââââââââ
+// ─── USGS Earthquake Hazard (FREE, no key) ────────────────────────────────────
 async function getUSGSHazards(lat, lon) {
   try {
     const { data } = await axios.get(
       `https://earthquake.usgs.gov/ws/designmaps/nehrp-2020.json?latitude=${lat}&longitude=${lon}&riskCategory=II&siteClass=D&title=PropX402`,
       { timeout: 8000 }
     );
-    const pga = data?.response?.data?.pga;
-    const level = pga > 0.5 ? 'Very High' : pga > 0.2 ? 'High' : pga > 0.1 ? 'Moderate' : pga > 0.04 ? 'Low' : 'Very Low';
+    const pga   = data?.response?.data?.pga;
+    const level =
+      pga > 0.5  ? 'Very High' :
+      pga > 0.2  ? 'High' :
+      pga > 0.1  ? 'Moderate' :
+      pga > 0.04 ? 'Low' : 'Very Low';
     return { earthquakeHazard: { peakGroundAcceleration: pga ? pga.toFixed(3) : null, riskLevel: level, source: 'USGS NEHRP 2020' } };
   } catch (err) {
     console.warn('[USGS]', err.message);
@@ -225,21 +268,24 @@ async function getUSGSHazards(lat, lon) {
   }
 }
 
-// âââ EPA Environmental Justice (FREE, no key) ââââââââââââââââââââââââââââ
+// ─── EPA EJSCREEN (FREE, no key) — FIXED response parsing ────────────────────
 async function getEnvironmentalData(lat, lon) {
   try {
+    const geometry = encodeURIComponent(JSON.stringify({ x: lon, y: lat, spatialReference: { wkid: 4326 } }));
     const { data } = await axios.get(
-      `https://ejscreen.epa.gov/mapper/ejscreenRESTbroker.aspx?namestr=&geometry={"x":${lon},"y":${lat},"spatialReference":{"wkid":4326}}&distance=1&unit=9035&areatype=&areaid=&f=pjson`,
-      { timeout: 8000 }
+      `https://ejscreen.epa.gov/mapper/ejscreenRESTbroker.aspx?namestr=&geometry=${geometry}&distance=1&unit=9035&areatype=&areaid=&f=pjson`,
+      { timeout: 10000 }
     );
-    const props = data?.data?.properties;
-    if (!props) return { note: 'EPA data not available for location' };
+    // EPA returns either data.data.properties or data.results[0].attributes depending on version
+    const props = data?.data?.properties || data?.results?.[0]?.attributes;
+    if (!props) return { note: 'EPA data not available for this location' };
     return {
-      airQualityPercentile: props.P_PM25 ? `${props.P_PM25.toFixed(0)}th percentile` : null,
-      superfundProximityPercentile: props.P_PNPL ? `${props.P_PNPL.toFixed(0)}th percentile` : null,
-      hazardousWastePercentile: props.P_TSDF ? `${props.P_TSDF.toFixed(0)}th percentile` : null,
-      ejIndex: props.EJSCREEN_SCORE_20 ? props.EJSCREEN_SCORE_20.toFixed(1) : null,
-      source: 'EPA EJSCREEN'
+      airQualityPercentile:          props.P_PM25  ? `${Math.round(props.P_PM25)}th percentile`  : null,
+      superfundProximityPercentile:  props.P_PNPL  ? `${Math.round(props.P_PNPL)}th percentile`  : null,
+      hazardousWastePercentile:      props.P_TSDF  ? `${Math.round(props.P_TSDF)}th percentile`  : null,
+      trafficProximityPercentile:    props.P_PTRAF ? `${Math.round(props.P_PTRAF)}th percentile` : null,
+      ejIndex: props.EJSCREEN_SCORE_20 ? parseFloat(props.EJSCREEN_SCORE_20).toFixed(1) : null,
+      source: 'EPA EJSCREEN',
     };
   } catch (err) {
     console.warn('[EPA]', err.message);
@@ -247,7 +293,140 @@ async function getEnvironmentalData(lat, lon) {
   }
 }
 
-// âââ Master Aggregator ââââââââââââââââââââââââââââââââââââââââââââââââââââ
+// ─── NOAA Tornado/Severe Weather Risk (FREE, no key) ─────────────────────────
+async function getNOAAHazards(lat, lon, county, state) {
+  try {
+    const { data } = await axios.get(
+      `https://api.weather.gov/points/${lat},${lon}`,
+      { headers: { 'User-Agent': 'PropX402/2.2 (prop-intel-api)' }, timeout: 6000 }
+    );
+    const zone = data?.properties?.county;
+    const tornadoRiskByState = {
+      OK:'Very High', KS:'Very High', TX:'Very High', NE:'High',
+      SD:'High', ND:'Moderate', IA:'Moderate', MO:'Moderate',
+      MS:'High', AL:'High', AR:'Moderate', TN:'Moderate',
+      IL:'Moderate', IN:'Moderate', OH:'Low', FL:'Moderate',
+      GA:'Low', NC:'Low', CA:'Very Low', NY:'Very Low',
+      WA:'Very Low', OR:'Very Low', MT:'Low', WY:'Low',
+    };
+    const tornadoRisk = tornadoRiskByState[state] || 'Low';
+    const hailRisk    = ['Very High','High'].includes(tornadoRisk) ? 'High' : tornadoRisk === 'Moderate' ? 'Moderate' : 'Low';
+    return {
+      tornadoRisk:     { riskLevel: tornadoRisk, source: 'NOAA Climatology' },
+      hailRisk:        { riskLevel: hailRisk },
+      weatherZone:     zone || null,
+      insuranceImpact:
+        tornadoRisk === 'Very High' ? 'Major premium impact — 40%+ surcharge expected' :
+        tornadoRisk === 'High'      ? 'Significant premium impact — 25%+ surcharge expected' :
+        tornadoRisk === 'Moderate'  ? 'Moderate premium impact — 15-20% surcharge' :
+                                      'Minimal weather impact on insurance',
+    };
+  } catch (err) {
+    console.warn('[NOAA]', err.message);
+    return { tornadoRisk: { riskLevel: 'Unknown' }, hailRisk: { riskLevel: 'Unknown' } };
+  }
+}
+
+// ─── FCC Broadband Availability (FREE, no key needed for basic) ──────────────
+async function getBroadbandData(lat, lon) {
+  try {
+    const { data } = await axios.get(
+      `https://broadbandmap.fcc.gov/api/public/map/listAvailability?latitude=${lat}&longitude=${lon}&location_id=&unit_id=&addr=&city=&zip=&state=&category=Residential&speed=25&tech=300&limit=25&offset=0`,
+      { headers: { 'User-Agent': 'PropX402/2.2' }, timeout: 8000 }
+    );
+    const providers    = data?.data || [];
+    const maxDownload  = providers.reduce((max, p) => Math.max(max, p.max_advertised_download_speed || 0), 0);
+    const hasGigabit   = providers.some(p => (p.max_advertised_download_speed || 0) >= 940);
+    const hasFiber     = providers.some(p => p.technology_code === 50);
+    const providerCount = new Set(providers.map(p => p.brand_name)).size;
+    return {
+      available: providers.length > 0,
+      maxDownloadMbps: maxDownload,
+      hasGigabit, hasFiber, providerCount,
+      strImpact:
+        hasGigabit    ? '✅ Gigabit available — premium STR/WFH signal' :
+        hasFiber      ? '✅ Fiber available — strong tenant appeal' :
+        maxDownload >= 100 ? '✅ Fast broadband — adequate for STR' :
+                        '⚠️ Limited broadband — may limit STR appeal and WFH tenants',
+      source: 'FCC Broadband Map',
+    };
+  } catch (err) {
+    console.warn('[FCC Broadband]', err.message);
+    return { available: null, note: 'Broadband data unavailable' };
+  }
+}
+
+// ─── BLS: State Job Market (FREE) — FIXED series ID format ───────────────────
+async function getBLSData(stateCode) {
+  try {
+    const fips = STATE_FIPS[stateCode];
+    if (!fips) return { note: `BLS: unknown state code ${stateCode}` };
+    // State unemployment series: LASST{2-digit-fips}0000000000003
+    const seriesId = `LASST${fips}0000000000003`;
+    const { data } = await axios.post(
+      'https://api.bls.gov/publicAPI/v2/timeseries/data/',
+      { seriesid: [seriesId], startyear: '2023', endyear: '2025' },
+      { headers: { 'Content-Type': 'application/json' }, timeout: 8000 }
+    );
+    const series = data?.Results?.series?.[0]?.data;
+    if (!series || series.length < 2) return { note: 'BLS data unavailable for this state' };
+    const latest   = series[0];
+    const priorYear = series.find(d => d.period === latest.period && d.year === String(parseInt(latest.year) - 1)) || series[Math.min(12, series.length - 1)];
+    const currentRate = parseFloat(latest.value);
+    const priorRate   = priorYear ? parseFloat(priorYear.value) : null;
+    const trend       = priorRate ? (currentRate < priorRate ? 'Improving' : currentRate > priorRate ? 'Worsening' : 'Stable') : 'Unknown';
+    return {
+      stateUnemploymentRate: `${currentRate}%`,
+      unemploymentTrend: trend,
+      period: `${latest.periodName} ${latest.year}`,
+      investorSignal:
+        currentRate < 4 ? '🔥 Low unemployment — strong rental demand' :
+        currentRate < 6 ? '✅ Healthy job market' :
+                          '⚠️ Elevated unemployment — monitor vacancy risk',
+      source: 'Bureau of Labor Statistics',
+    };
+  } catch (err) {
+    console.warn('[BLS]', err.message);
+    return { note: 'Job market data unavailable' };
+  }
+}
+
+// ─── OpenFEMA Disaster History (FREE, no key) — FIXED query format ────────────
+async function getDisasterHistory(state, county) {
+  try {
+    const countyClean = (county || '').replace(/ county$/i, '').trim().toUpperCase();
+    // FEMA OData filter syntax
+    const filter = `state eq '${state}' and designatedArea eq '${countyClean} (County)'`;
+    const { data } = await axios.get(
+      `https://www.fema.gov/api/open/v2/disasterDeclarationsSummaries?$filter=${encodeURIComponent(filter)}&$orderby=declarationDate desc&$top=20`,
+      { timeout: 8000 }
+    );
+    const disasters = data?.DisasterDeclarationsSummaries || [];
+    const recentDisasters = disasters.slice(0, 5).map(d => ({
+      type:  d.incidentType,
+      title: d.declarationTitle,
+      date:  d.declarationDate?.split('T')[0],
+      id:    d.disasterNumber,
+    }));
+    const floodEvents  = disasters.filter(d => d.incidentType === 'Flood').length;
+    const severeStorms = disasters.filter(d => d.incidentType === 'Severe Storm').length;
+    return {
+      totalFederalDisasters: disasters.length,
+      floodDeclarations:     floodEvents,
+      severeStormDeclarations: severeStorms,
+      recentDisasters,
+      riskFlag:
+        floodEvents >= 3 ? '🚨 High flood disaster history — verify insurance availability' :
+        floodEvents >= 1 ? '⚠️ Flood disaster history — review insurance options' : null,
+      source: 'OpenFEMA Disaster Declarations',
+    };
+  } catch (err) {
+    console.warn('[FEMA Disasters]', err.message);
+    return { note: 'Disaster history unavailable' };
+  }
+}
+
+// ─── Master Aggregator ────────────────────────────────────────────────────────
 async function getPropertyIntel(address) {
   const startTime = Date.now();
   const geo = await geocodeAddress(address);
@@ -263,17 +442,18 @@ async function getPropertyIntel(address) {
     getUSGSHazards(geo.lat, geo.lon),
     getNOAAHazards(geo.lat, geo.lon, geo.county, geo.stateCode),
     getBroadbandData(geo.lat, geo.lon),
-    getBLSData(geo.stateCode)
+    getBLSData(geo.stateCode),
   ]);
 
-  // Sequential: need census FIPS first, and state for disaster lookup
+  // Sequential: need census FIPS first for HUD state lookup
+  const stateFips = census._fips?.state || STATE_FIPS[geo.stateCode] || geo.stateCode;
   const [hud, marketTrends, disasterHistory] = await Promise.all([
-    getHUDData(geo.zip, census._fips?.state, geo.county),
+    getHUDData(geo.zip, stateFips, geo.county),
     getFREDData(geo.stateCode),
-    getDisasterHistory(geo.stateCode, geo.county)
+    getDisasterHistory(geo.stateCode, geo.county),
   ]);
 
-  // Enhanced Risk Score
+  // Risk Score
   let riskScore = 0;
   if (flood.inFloodZone) riskScore += 25;
   if (rentcast.lastSalePrice && rentcast.valueEstimate?.valueEstimate) {
@@ -291,158 +471,35 @@ async function getPropertyIntel(address) {
   if (disasterHistory.floodDeclarations >= 3) riskScore += 10;
 
   return {
-    location: { address: geo.displayName, lat: geo.lat, lon: geo.lon, city: geo.city, state: geo.state, stateCode: geo.stateCode, zip: geo.zip, county: geo.county },
-    property: rentcast,
-    floodRisk: flood,
+    location: {
+      address:   geo.displayName, lat: geo.lat, lon: geo.lon,
+      city:      geo.city, state: geo.state, stateCode: geo.stateCode,
+      zip:       geo.zip, county: geo.county,
+    },
+    property:        rentcast,
+    floodRisk:       flood,
     walkability,
-    neighborhood: census,
+    neighborhood:    census,
     environment,
-    naturalHazards: { ...usgsHazards, ...noaaHazards },
-    infrastructure: { broadband },
+    naturalHazards:  { ...usgsHazards, ...noaaHazards },
+    infrastructure:  { broadband },
     hudIntelligence: hud,
     marketTrends,
-    jobMarket: blsJobs,
+    jobMarket:       blsJobs,
     disasterHistory,
-    riskScore: Math.min(riskScore, 100),
-    riskLabel: riskScore < 20 ? 'Low' : riskScore < 50 ? 'Moderate' : 'High',
+    riskScore:  Math.min(riskScore, 100),
+    riskLabel:  riskScore < 20 ? 'Low' : riskScore < 50 ? 'Moderate' : 'High',
     meta: {
       processingMs: Date.now() - startTime,
-      dataSources: ['OpenStreetMap', 'RentCast', 'FEMA Flood Map', 'OSM Overpass (Walkability)', 'US Census ACS', 'EPA EJSCREEN', 'USGS Earthquake Hazards', 'NOAA Severe Weather', 'FCC Broadband Map', 'HUD Opportunity Zones', 'HUD Fair Market Rent', 'FRED Housing Index', 'BLS Job Market', 'OpenFEMA Disaster History'],
-      protocol: 'x402', network: 'base-mainnet'
-    }
+      dataSources: [
+        'OpenStreetMap', 'RentCast', 'FEMA NFHL (Flood)', 'OSM Overpass (Walkability)',
+        'US Census ACS', 'EPA EJSCREEN', 'USGS Earthquake Hazards', 'NOAA Severe Weather',
+        'FCC Broadband Map', 'HUD Opportunity Zones', 'HUD Fair Market Rent',
+        'FRED Housing Index', 'BLS Job Market', 'OpenFEMA Disaster History',
+      ],
+      protocol: 'x402', network: 'base-mainnet',
+    },
   };
 }
 
 module.exports = { getPropertyIntel };
-
-// âââ NOAA Tornado/Severe Weather Risk (FREE, no key) âââââââââââââââââââââ
-async function getNOAAHazards(lat, lon, county, state) {
-  try {
-    // NOAA Storm Prediction Center â county tornado risk
-    const { data } = await axios.get(
-      `https://api.weather.gov/points/${lat},${lon}`,
-      { headers: { 'User-Agent': 'PropX402/1.0 (prop-intel-api)' }, timeout: 6000 }
-    );
-    const zone = data?.properties?.county;
-    const forecastZone = data?.properties?.forecastZone;
-
-    // Get county tornado history from SPC (Storm Prediction Center)
-    // Iowa/Midwest tornado risk by state (static fallback based on NOAA climatology)
-    const tornadoRiskByState = {
-      OK: 'Very High', KS: 'Very High', TX: 'Very High', NE: 'High',
-      SD: 'High', ND: 'Moderate', IA: 'Moderate', MO: 'Moderate',
-      MS: 'High', AL: 'High', AR: 'Moderate', TN: 'Moderate',
-      IL: 'Moderate', IN: 'Moderate', OH: 'Low', FL: 'Moderate',
-      GA: 'Low', NC: 'Low', CA: 'Very Low', NY: 'Very Low',
-      WA: 'Very Low', OR: 'Very Low', MT: 'Low', WY: 'Low'
-    };
-
-    const tornadoRisk = tornadoRiskByState[state] || 'Low';
-
-    // Hail risk (correlated with tornado risk in most areas)
-    const hailRisk = ['Very High', 'High'].includes(tornadoRisk) ? 'High' :
-                     tornadoRisk === 'Moderate' ? 'Moderate' : 'Low';
-
-    return {
-      tornadoRisk: { riskLevel: tornadoRisk, source: 'NOAA Climatology' },
-      hailRisk: { riskLevel: hailRisk },
-      weatherZone: zone || null,
-      insuranceImpact: tornadoRisk === 'Very High' ? 'Major premium impact â 40%+ surcharge expected' :
-                       tornadoRisk === 'High' ? 'Significant premium impact â 25%+ surcharge expected' :
-                       tornadoRisk === 'Moderate' ? 'Moderate premium impact â 15-20% surcharge' : 'Minimal weather impact on insurance'
-    };
-  } catch (err) {
-    console.warn('[NOAA]', err.message);
-    return { tornadoRisk: { riskLevel: 'Unknown' }, hailRisk: { riskLevel: 'Unknown' } };
-  }
-}
-
-// âââ FCC Broadband Availability (FREE, no key) ââââââââââââââââââââââââââââ
-async function getBroadbandData(lat, lon) {
-  try {
-    const { data } = await axios.get(
-      `https://broadbandmap.fcc.gov/api/public/map/listAvailability?latitude=${lat}&longitude=${lon}&location_id=&unit_id=&addr=&city=&zip=&state=&category=Residential&speed=25&tech=300&limit=25&offset=0`,
-      { headers: { 'User-Agent': 'PropX402/1.0' }, timeout: 6000 }
-    );
-
-    const providers = data?.data || [];
-    const maxDownload = providers.reduce((max, p) => Math.max(max, p.max_advertised_download_speed || 0), 0);
-    const hasGigabit = providers.some(p => (p.max_advertised_download_speed || 0) >= 940);
-    const hasFiber = providers.some(p => p.technology_code === 50); // 50 = fiber
-    const providerCount = new Set(providers.map(p => p.brand_name)).size;
-
-    return {
-      available: providers.length > 0,
-      maxDownloadMbps: maxDownload,
-      hasGigabit,
-      hasFiber,
-      providerCount,
-      strImpact: hasGigabit ? 'â Gigabit available â premium STR/WFH signal' : hasFiber ? 'â Fiber available â strong tenant appeal' : maxDownload >= 100 ? 'â Fast broadband â adequate for STR' : 'â ï¸ Limited broadband â may limit STR appeal and WFH tenants',
-      source: 'FCC Broadband Map'
-    };
-  } catch (err) {
-    console.warn('[FCC Broadband]', err.message);
-    return { available: null, note: 'Broadband data unavailable' };
-  }
-}
-
-// âââ BLS: Local Job Market (FREE, no key for basic) ââââââââââââââââââââââ
-async function getBLSData(stateCode) {
-  try {
-    // BLS State unemployment rate â public API no key needed
-    const { data } = await axios.get(
-      `https://api.bls.gov/publicAPI/v2/timeseries/data/LASST${stateCode}0000000000003`,
-      { timeout: 6000 }
-    );
-    const series = data?.Results?.series?.[0]?.data;
-    if (!series || series.length < 2) return { note: 'BLS data unavailable' };
-
-    const latest = series[0];
-    const yearAgo = series.find(d => d.period === latest.period && d.year === String(parseInt(latest.year) - 1)) || series[12];
-
-    const currentRate = parseFloat(latest.value);
-    const priorRate = yearAgo ? parseFloat(yearAgo.value) : null;
-    const trend = priorRate ? (currentRate < priorRate ? 'Improving' : currentRate > priorRate ? 'Worsening' : 'Stable') : 'Unknown';
-
-    return {
-      stateUnemploymentRate: `${currentRate}%`,
-      unemploymentTrend: trend,
-      period: `${latest.periodName} ${latest.year}`,
-      investorSignal: currentRate < 4 ? 'ð¥ Low unemployment â strong rental demand' : currentRate < 6 ? 'â Healthy job market' : 'â ï¸ Elevated unemployment â monitor vacancy risk',
-      source: 'Bureau of Labor Statistics'
-    };
-  } catch (err) {
-    console.warn('[BLS]', err.message);
-    return { note: 'Job market data unavailable' };
-  }
-}
-
-// âââ OpenFEMA Disaster History (FREE, no key) âââââââââââââââââââââââââââââ
-async function getDisasterHistory(state, county) {
-  try {
-    const countyClean = (county || '').replace(' County', '').replace(' county', '').trim();
-    const { data } = await axios.get(
-      `https://www.fema.gov/api/open/v2/disasterDeclarationsSummaries?state=${state}&designatedArea=${encodeURIComponent(countyClean.toUpperCase())}+%28County%29&$orderby=declarationDate desc&$top=10`,
-      { timeout: 6000 }
-    );
-    const disasters = data?.DisasterDeclarationsSummaries || [];
-    const recentDisasters = disasters.slice(0, 5).map(d => ({
-      type: d.incidentType, title: d.declarationTitle, date: d.declarationDate?.split('T')[0], id: d.disasterNumber
-    }));
-
-    const floodEvents = disasters.filter(d => d.incidentType === 'Flood').length;
-    const severeStorms = disasters.filter(d => d.incidentType === 'Severe Storm').length;
-
-    return {
-      totalFederalDisasters: disasters.length,
-      floodDeclarations: floodEvents,
-      severeStormDeclarations: severeStorms,
-      recentDisasters,
-      riskFlag: floodEvents >= 3 ? 'ð¨ High flood disaster history â verify insurance availability' : floodEvents >= 1 ? 'â ï¸ Flood disaster history â review insurance options' : null,
-      source: 'OpenFEMA Disaster Declarations'
-    };
-  } catch (err) {
-    console.warn('[FEMA Disasters]', err.message);
-    return { note: 'Disaster history unavailable' };
-  }
-}
