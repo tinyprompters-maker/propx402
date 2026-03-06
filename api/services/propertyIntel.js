@@ -271,24 +271,30 @@ async function getUSGSHazards(lat, lon) {
 // ─── EPA EJSCREEN (FREE, no key) — FIXED response parsing ────────────────────
 async function getEnvironmentalData(lat, lon) {
   try {
-    const geometry = encodeURIComponent(JSON.stringify({ x: lon, y: lat, spatialReference: { wkid: 4326 } }));
+    // EPA EJScreen direct API blocked by hosting proxy — use EPA TRI via EnviroFacts
+    // TRI = Toxic Release Inventory: nearby industrial facilities with toxic releases
+    const latMin = (lat - 0.15).toFixed(4), latMax = (lat + 0.15).toFixed(4);
+    const lonMin = (lon - 0.20).toFixed(4), lonMax = (lon + 0.20).toFixed(4);
     const { data } = await axios.get(
-      `https://ejscreen.epa.gov/mapper/ejscreenRESTbroker.aspx?namestr=&geometry=${geometry}&distance=1&unit=9035&areatype=&areaid=&f=pjson`,
+      `https://data.epa.gov/efservice/TRI_FACILITY/LATITUDE82/BEGINNING/${latMin}/ENDING/${latMax}/LONGITUDE82/BEGINNING/${lonMin}/ENDING/${lonMax}/rows/10/JSON`,
       { timeout: 10000 }
     );
-    // EPA returns either data.data.properties or data.results[0].attributes depending on version
-    const props = data?.data?.properties || data?.results?.[0]?.attributes;
-    if (!props) return { note: 'EPA data not available for this location' };
+    const facilities = Array.isArray(data) ? data.filter(f => f.FACILITY_NAME) : [];
+    const count = facilities.length;
     return {
-      airQualityPercentile:          props.P_PM25  ? `${Math.round(props.P_PM25)}th percentile`  : null,
-      superfundProximityPercentile:  props.P_PNPL  ? `${Math.round(props.P_PNPL)}th percentile`  : null,
-      hazardousWastePercentile:      props.P_TSDF  ? `${Math.round(props.P_TSDF)}th percentile`  : null,
-      trafficProximityPercentile:    props.P_PTRAF ? `${Math.round(props.P_PTRAF)}th percentile` : null,
-      ejIndex: props.EJSCREEN_SCORE_20 ? parseFloat(props.EJSCREEN_SCORE_20).toFixed(1) : null,
-      source: 'EPA EJSCREEN',
+      triSitesNearby: count,
+      facilityNames: facilities.slice(0, 3).map(f => f.FACILITY_NAME).filter(Boolean),
+      environmentalRisk:
+        count === 0 ? 'Low' :
+        count <= 2  ? 'Moderate' : 'Elevated',
+      investorNote:
+        count === 0 ? '✅ Clean area — no known TRI industrial hazards nearby' :
+        count <= 2  ? '⚠️ Review nearby facilities before purchase' :
+                      '🚨 Recommend Phase I environmental review',
+      source: 'EPA Toxic Release Inventory (EnviroFacts)',
     };
   } catch (err) {
-    console.warn('[EPA]', err.message);
+    console.warn('[EPA TRI]', err.message);
     return { note: 'Environmental data temporarily unavailable' };
   }
 }
@@ -328,30 +334,39 @@ async function getNOAAHazards(lat, lon, county, state) {
 }
 
 // ─── FCC Broadband Availability (FREE, no key needed for basic) ──────────────
-async function getBroadbandData(lat, lon) {
+async function getBroadbandData(lat, lon, stateFips, countyFips, censusTract) {
   try {
+    // FCC broadbandmap.fcc.gov deprecated — Census ACS B28002 (household subscription rates)
+    if (!stateFips || !countyFips || !censusTract) {
+      return { available: null, note: 'Census FIPS required for broadband data' };
+    }
+    // Extract 6-digit tract code from census tract string like "19-113-001700"
+    const tractCode = censusTract.split('-').pop() || censusTract.replace(/\D/g, '').slice(-6);
     const { data } = await axios.get(
-      `https://broadbandmap.fcc.gov/api/public/map/listAvailability?latitude=${lat}&longitude=${lon}&location_id=&unit_id=&addr=&city=&zip=&state=&category=Residential&speed=25&tech=300&limit=25&offset=0`,
-      { headers: { 'User-Agent': 'PropX402/2.2' }, timeout: 8000 }
+      `https://api.census.gov/data/2022/acs/acs5?get=NAME,B28002_001E,B28002_004E,B28002_007E&for=tract:${tractCode}&in=state:${stateFips}%20county:${countyFips}`,
+      { timeout: 8000 }
     );
-    const providers    = data?.data || [];
-    const maxDownload  = providers.reduce((max, p) => Math.max(max, p.max_advertised_download_speed || 0), 0);
-    const hasGigabit   = providers.some(p => (p.max_advertised_download_speed || 0) >= 940);
-    const hasFiber     = providers.some(p => p.technology_code === 50);
-    const providerCount = new Set(providers.map(p => p.brand_name)).size;
+    if (!Array.isArray(data) || data.length < 2) return { available: null, note: 'Census broadband data unavailable' };
+    const [, totalStr, broadbandStr, fiberStr] = data[1];
+    const total = parseInt(totalStr), broadband = parseInt(broadbandStr);
+    const pct = total > 0 ? Math.round((broadband / total) * 100) : null;
     return {
-      available: providers.length > 0,
-      maxDownloadMbps: maxDownload,
-      hasGigabit, hasFiber, providerCount,
+      available: broadband > 0,
+      adoptionRate: pct !== null ? `${pct}%` : null,
+      adoptionLabel:
+        pct >= 90 ? 'Excellent broadband coverage' :
+        pct >= 80 ? 'Good broadband coverage' :
+        pct >= 65 ? 'Fair broadband coverage' : 'Limited broadband coverage',
+      subscribedHouseholds: broadband,
+      totalHouseholds: total,
       strImpact:
-        hasGigabit    ? '✅ Gigabit available — premium STR/WFH signal' :
-        hasFiber      ? '✅ Fiber available — strong tenant appeal' :
-        maxDownload >= 100 ? '✅ Fast broadband — adequate for STR' :
-                        '⚠️ Limited broadband — may limit STR appeal and WFH tenants',
-      source: 'FCC Broadband Map',
+        pct >= 90 ? '✅ High broadband adoption — strong STR/WFH signal' :
+        pct >= 75 ? '✅ Good broadband adoption — adequate for STR' :
+                    '⚠️ Below-average broadband — may limit STR appeal',
+      source: 'US Census ACS 5-Year (B28002)',
     };
   } catch (err) {
-    console.warn('[FCC Broadband]', err.message);
+    console.warn('[Broadband]', err.message);
     return { available: null, note: 'Broadband data unavailable' };
   }
 }
@@ -392,13 +407,15 @@ async function getBLSData(stateCode) {
 }
 
 // ─── OpenFEMA Disaster History (FREE, no key) — FIXED query format ────────────
-async function getDisasterHistory(state, county) {
+async function getDisasterHistory(state, countyFips) {
   try {
-    const countyClean = (county || '').replace(/ county$/i, '').trim().toUpperCase();
-    // FEMA OData filter syntax
-    const filter = `state eq '${state}' and designatedArea eq '${countyClean} (County)'`;
+    // FEMA API is case-sensitive: DisasterDeclarationsSummaries (capital D, capital S)
+    // Filter by FIPS county code — more reliable than designatedArea string matching
+    const countyCode = countyFips ? (countyFips.length > 3 ? countyFips.slice(-3) : countyFips) : null;
+    if (!countyCode) return { note: 'County FIPS required for disaster history' };
+    const filter = `state eq '${state}' and fipsCountyCode eq '${countyCode}'`;
     const { data } = await axios.get(
-      `https://www.fema.gov/api/open/v2/disasterDeclarationsSummaries?$filter=${encodeURIComponent(filter)}&$orderby=declarationDate desc&$top=20`,
+      `https://www.fema.gov/api/open/v2/DisasterDeclarationsSummaries?$filter=${encodeURIComponent(filter)}&$orderby=declarationDate desc&$top=20`,
       { timeout: 8000 }
     );
     const disasters = data?.DisasterDeclarationsSummaries || [];
@@ -433,7 +450,7 @@ async function getPropertyIntel(address) {
   if (!geo) throw new Error(`Unable to geocode: ${address}`);
 
   // Fire all parallel sources simultaneously
-  const [rentcast, flood, walkability, census, environment, usgsHazards, noaaHazards, broadband, blsJobs] = await Promise.all([
+  const [rentcast, flood, walkability, census, environment, usgsHazards, noaaHazards, blsJobs] = await Promise.all([
     getRentCastData(address),
     getFloodZone(geo.lat, geo.lon),
     getOSMWalkability(geo.lat, geo.lon),
@@ -441,16 +458,18 @@ async function getPropertyIntel(address) {
     getEnvironmentalData(geo.lat, geo.lon),
     getUSGSHazards(geo.lat, geo.lon),
     getNOAAHazards(geo.lat, geo.lon, geo.county, geo.stateCode),
-    getBroadbandData(geo.lat, geo.lon),
     getBLSData(geo.stateCode),
   ]);
 
   // Sequential: need census FIPS first for HUD state lookup
-  const stateFips = census._fips?.state || STATE_FIPS[geo.stateCode] || geo.stateCode;
-  const [hud, marketTrends, disasterHistory] = await Promise.all([
+  const stateFips  = census._fips?.state  || STATE_FIPS[geo.stateCode] || geo.stateCode;
+  const countyFips = census._fips?.county || '';
+  const censusTract = census.censusTract || '';
+  const [hud, marketTrends, disasterHistory, broadband] = await Promise.all([
     getHUDData(geo.zip, stateFips, geo.county),
     getFREDData(geo.stateCode),
-    getDisasterHistory(geo.stateCode, geo.county),
+    getDisasterHistory(geo.stateCode, countyFips),
+    getBroadbandData(geo.lat, geo.lon, stateFips, countyFips, censusTract),
   ]);
 
   // Risk Score
