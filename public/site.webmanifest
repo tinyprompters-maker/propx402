@@ -1,0 +1,13 @@
+{
+  "name": "PropX402 — Real Estate Intelligence API",
+  "short_name": "PropX402",
+  "description": "Real estate intelligence API for AI agents. Pay per query via x402 on Base.",
+  "icons": [
+    { "src": "/android-chrome-192x192.png", "sizes": "192x192", "type": "image/png" },
+    { "src": "/android-chrome-512x512.png",  "sizes": "512x512",  "type": "image/png" }
+  ],
+  "theme_color": "#060810",
+  "background_color": "#060810",
+  "display": "standalone",
+  "start_url": "/"
+}
